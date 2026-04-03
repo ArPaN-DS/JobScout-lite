@@ -1,4 +1,4 @@
-# 📊 ARIA: Data & Control Flow Diagrams
+#  ARIA: Data & Control Flow Diagrams
 
 The following charts outline the strict sequences in which Data payloads move across the GPU limits and Web boundaries without external dependency.
 

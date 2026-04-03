@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Privacy-100%25_Local-blue?style=for-the-badge&logo=lock" />
 </p>
 
-# 🤖 ARIA — Arpan's Ridiculously Intelligent Assistant
+#  ARIA — Arpan's Ridiculously Intelligent Assistant
 
 > A fully autonomous, GPU-accelerated personal AI system that runs entirely on local hardware — zero cloud costs, zero data leaks, maximum intelligence.
 
@@ -13,7 +13,7 @@ ARIA is not a toy chatbot. It's a **production-grade AI pipeline** combining loc
 
 ---
 
-## 🎯 What ARIA Does
+##  What ARIA Does
 
 | Capability | Description | Status |
 |:---|:---|:---:|
@@ -25,7 +25,7 @@ ARIA is not a toy chatbot. It's a **production-grade AI pipeline** combining loc
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -78,7 +78,7 @@ ARIA is not a toy chatbot. It's a **production-grade AI pipeline** combining loc
 
 ---
 
-## 📊 Key Metrics
+##  Key Metrics
 
 | Metric | Value |
 |:---|:---|
@@ -98,7 +98,7 @@ ARIA is not a toy chatbot. It's a **production-grade AI pipeline** combining loc
 
 ---
 
-## 🧠 The Brain: Model Selection & Optimization
+##  The Brain: Model Selection & Optimization
 
 A critical engineering decision was choosing the right model for each task within the constraints of an 8GB VRAM budget:
 
@@ -122,7 +122,7 @@ Result: 6.2GB → 2.4GB VRAM (62% reduction), zero quality loss for chat
 
 ---
 
-## 🔍 Job Finder Pipeline — How It Works
+##  Job Finder Pipeline — How It Works
 
 ```
 STEP 1: COLLECTION (parallel scraping)
@@ -190,7 +190,7 @@ The system sends **Telegram progress updates every 5 minutes** during operation:
 
 ---
 
-## 🤖 ARIA's Personality Engine
+##  ARIA's Personality Engine
 
 ARIA isn't a generic chatbot — she has a defined personality loaded via `SOUL.md` into OpenClaw's workspace:
 
@@ -205,7 +205,7 @@ Identity is persisted through OpenClaw's `USER.md` + `SOUL.md` workspace files, 
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |:---|:---|
@@ -223,7 +223,7 @@ Identity is persisted through OpenClaw's `USER.md` + `SOUL.md` workspace files, 
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 Personal_Assist/
@@ -244,7 +244,7 @@ Personal_Assist/
 
 ---
 
-## ⚡ Quick Start
+##  Quick Start
 
 ### Prerequisites
 - **NVIDIA GPU** with 8GB+ VRAM
@@ -294,7 +294,7 @@ python bot.py             # Run standalone chatbot (without OpenClaw)
 
 ---
 
-## 🔒 Security
+##  Security
 
 - **All credentials** stored in `.env` (gitignored — never pushed to GitHub)
 - **Personal data** (`profiles/`, `resumes/`) excluded from version control
@@ -303,7 +303,7 @@ python bot.py             # Run standalone chatbot (without OpenClaw)
 
 ---
 
-## 📝 License
+##  License
 
 This is a personal project built for private use. Not intended for redistribution.
 

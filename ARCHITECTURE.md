@@ -1,4 +1,4 @@
-# 🏗️ ARIA: Technical Architecture
+#  ARIA: Technical Architecture
 
 ARIA (Arpan's Ridiculously Intelligent Assistant) is an entirely localized, GPU-accelerated autonomous system. The architecture is designed to bypass traditional cloud API dependencies (like ChatGPT or Claude) and leverage idle consumer GPU hardware to perform production-grade orchestration and reasoning.
 

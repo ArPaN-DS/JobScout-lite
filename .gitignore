@@ -1,3 +1,9 @@
 assist_enve/
 __pycache__/
 *.pyc
+
+# Exclude credentials and local data
+.env
+profiles/
+resumes/
+*.log

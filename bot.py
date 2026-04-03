@@ -2,11 +2,15 @@ import httpx  # Faster and better for Async bots
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # ===== CONFIGURATION =====
-BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-# Check if you used port 11434 or 11435 in your Docker command!
-OLLAMA_URL = "http://localhost:11434/api/chat" 
-MODEL = "qwen3:8b"
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
+MODEL = os.getenv("OLLAMA_BOT_MODEL", "qwen3:fast")  # The bot uses the faster model
 
 SYSTEM_PROMPT = """You are Arpan's private personal assistant. Expert in Data Science & NLP. 
 Be concise, smart, and friendly. Always respond in the same language the user writes in."""

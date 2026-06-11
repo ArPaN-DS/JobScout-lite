@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/JobScout--Lite-Technical_Architecture-6366F1?style=for-the-badge&logo=cpu" height="60" />
-</p>
+<h1 align="center">JobScout-Lite</h1>
+<h3 align="center">Technical Architecture & Design Details</h3>
 
 This project is an entirely localized, GPU-accelerated autonomous personal assistant and job search agent. The architecture is designed to bypass traditional cloud API dependencies (like OpenAI GPT or Anthropic Claude) and leverage local consumer GPU/CPU hardware to perform production-grade orchestration and reasoning.
 

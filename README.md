@@ -1,15 +1,12 @@
+<h1 align="center">JobScout-Lite</h1>
+<h3 align="center">Your Autonomous Local AI Recruiter & Personal Agent</h3>
+
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production_Ready-brightgreen?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Cost-$0/month-success?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Privacy-100%25_Local-blue?style=for-the-badge&logo=lock" />
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" />
 </p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/JobScout--Lite-Local_AI_Recruitment_Agent-6366F1?style=for-the-badge&logo=opsgenie" height="60" />
-</p>
-
-<h3 align="center"><b>Your Autonomous Local AI Recruiter & Personal Agent</b></h3>
 
 > **Open your device, and your agent silently starts working in the background to find jobs where you are the best fit, auto-drafting a personalized cover letter/application pitch for each matched role.** JobScout-Lite is a fully autonomous, GPU-accelerated AI recruiting agent that works for *you*. It scrapes major job portals, filters matches against your profile, scores compatibility using locally-run LLMs via Ollama, and delivers structured, prioritized reports straight to your Telegram. 100% Private. 100% Free. 100% Local.
 

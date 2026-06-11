@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/JobScout--Lite-Data_&_Control_Flow-6366F1?style=for-the-badge&logo=gitkraken" height="60" />
-</p>
+<h1 align="center">JobScout-Lite</h1>
+<h3 align="center">Data & Control Flow Diagrams</h3>
 
 The following charts outline the strict sequences in which data payloads move across the system boundaries without external dependency.
 

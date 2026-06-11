@@ -23,6 +23,9 @@ SOUL.md
 # ===== Logs & Cache =====
 *.log
 jobs_cache/
+logs/
+.pytest_cache/
+
 
 # ===== OS Generated =====
 .DS_Store

@@ -1,0 +1,14 @@
+{
+  "clean_strong_match": "{\"match\": \"STRONG_MATCH\", \"reason\": \"Direct NLP role\"}",
+  "clean_good_match": "{\"match\": \"GOOD_MATCH\", \"reason\": \"Related ML role\"}",
+  "clean_no_match": "{\"match\": \"NO_MATCH\", \"reason\": \"Unrelated sales role\"}",
+  "with_thinking_tokens": "<think>\nLet me analyze this...\n</think>\n{\"match\": \"STRONG_MATCH\", \"reason\": \"Good fit\"}",
+  "with_markdown_fence": "```json\n{\"match\": \"GOOD_MATCH\", \"reason\": \"Some overlap\"}\n```",
+  "with_preamble": "Sure! Here's my assessment:\n\n{\"match\": \"NO_MATCH\", \"reason\": \"Wrong domain\"}",
+  "legacy_numeric_score_high": "{\"score\": 85, \"reason\": \"Strong Python match\"}",
+  "legacy_numeric_score_low": "{\"score\": 30, \"reason\": \"No NLP experience required\"}",
+  "malformed_json": "{match: STRONG_MATCH, reason: broken}",
+  "empty_response": "",
+  "just_classification_word": "Based on my analysis, this is a STRONG_MATCH because the skills align.",
+  "nested_json_edge_case": "{\"match\": \"GOOD_MATCH\", \"reason\": \"Needs {TensorFlow}\"}"
+}

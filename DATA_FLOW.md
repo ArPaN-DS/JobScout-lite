@@ -13,26 +13,23 @@ sequenceDiagram
     autonumber
     participant User as Remote User (Telegram)
     participant Tele as Telegram Servers
-    participant Python as bot.py (Webhook Listener)
-    participant OpenClaw as OpenClaw Container
+    participant Python as bot.py (Long Polling)
     participant Ollama as Ollama API
     participant GPU as Local GPU (Chat Model)
 
     User->>Tele: text: "Summarize this paper"
-    Tele->>Python: Event Trigger: on_message()
-    Python->>OpenClaw: Post /chat (Inject text)
+    Tele->>Python: Poll Update / Message Received
     
     rect rgb(20, 20, 30)
-    Note over OpenClaw,GPU: Inference Pipeline
-    OpenClaw->>OpenClaw: Load SOUL.md (Persona)
-    OpenClaw->>OpenClaw: Prepend historical chat logs
-    OpenClaw->>Ollama: POST /api/generate {model: fast, prompt}
+    Note over Python,GPU: Inference Pipeline
+    Python->>Python: Load SOUL.md (Persona)
+    Python->>Python: Prepend historical chat logs (up to 20)
+    Python->>Ollama: POST /api/chat {model: fast, messages}
     Ollama->>GPU: Load layers to VRAM
     GPU-->>Ollama: Inference Tokens
     end
     
-    Ollama-->>OpenClaw: Streaming HTTP Response
-    OpenClaw-->>Python: Processed String
+    Ollama-->>Python: JSON Response (Message content)
     Python->>Tele: send_message(reply)
     Tele->>User: Delivery
 ```
@@ -41,45 +38,54 @@ sequenceDiagram
 
 ## Phase 2: Autonomous Job Scoring Pipeline
 
-This process happens purely automatically based on the OS Scheduler trigger.
+This process happens purely automatically based on the OS Scheduler / Startup trigger.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant OS as OS Task Scheduler
+    participant OS as OS Task Scheduler / Startup
     participant JobFinder as job_finder.py
-    participant Web as Internet Portals (LinkedIn, Indeed)
-    participant Memory as Local Cache
+    participant Web as Internet Portals (LinkedIn, Naukri, Glassdoor...)
+    participant Cache as seen_jobs.json (core/cache.py)
+    participant Scorer as Scorer Pipeline (core/scorer.py)
     participant Ollama as Ollama API
     participant GPU as Local GPU (Scoring Model)
+    participant Tele as Telegram API
 
-    OS->>JobFinder: Execute python script
+    OS->>JobFinder: Execute script
     
     rect rgb(10, 30, 20)
     Note over JobFinder,Web: Step 1: Web Data Collection
-    JobFinder->>Web: Parallel Requests (nlp engineer, ml engineer)
-    Web-->>JobFinder: Raw HTML / JSON Payload (500+ items)
+    JobFinder->>Web: Parallel searches (LinkedIn, Naukri, Glassdoor...)
+    Web-->>JobFinder: Raw HTML / JSON Payload (500+ jobs)
     end
     
-    JobFinder->>JobFinder: Parse & Clean HTML -> Text
+    JobFinder->>Cache: Filter seen jobs (Company + Title hash)
+    Cache-->>JobFinder: Return novel jobs
     
-    JobFinder->>Memory: Check existing hashes (Company+Title)
-    Memory-->>JobFinder: Return novel posts
+    rect rgb(30, 30, 20)
+    Note over JobFinder,Scorer: Step 2: Keyword Pre-Filter
+    JobFinder->>Scorer: Run keyword_prefilter() vs profile keywords
+    Scorer-->>JobFinder: Filtered candidate jobs (High Recall)
+    end
     
     rect rgb(40, 20, 20)
-    Note over JobFinder,GPU: Step 2: AI Scoring
-    loop For Every Unique Job
-        JobFinder->>Ollama: POST /api/generate {prompt: Profile + JobText}
-        Ollama->>GPU: Infer via scoring model
-        GPU-->>Ollama: Return strict JSON
-        Ollama-->>JobFinder: { "score": 88, "reason": "Match on PyTorch" }
+    Note over JobFinder,GPU: Step 3: LLM Match Classification
+    loop For Every Candidate Job
+        JobFinder->>Scorer: score_job_llm()
+        Scorer->>Ollama: POST /api/chat {model: 4b, format: json, profile, job}
+        Ollama->>GPU: Inference
+        GPU-->>Ollama: Return structured JSON tokens
+        Ollama-->>Scorer: {"match": "STRONG_MATCH/GOOD_MATCH/NO_MATCH", "reason": "..."}
+        Scorer-->>JobFinder: Classify & save match details
     end
     end
     
-    JobFinder->>JobFinder: Filter matches (Score >= 60%)
-    JobFinder->>OS: Sort desc, Format Markdown
-    JobFinder->>OS: Dispatch batch payloads explicitly to Telegram
-```
+    rect rgb(20, 20, 40)
+    Note over JobFinder,Tele: Step 4: Dispatch Matches
+    JobFinder->>Tele: Send "Collection Complete" & summary statistics
+    JobFinder->>Tele: Send ranked job detail cards (Strong & Good matches)
+    end
 
 ---
 

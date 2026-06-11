@@ -7,3 +7,7 @@ beautifulsoup4==4.15.0
 python-dotenv==1.2.2
 markdownify==0.13.1
 pandas==2.3.3
+
+# Testing
+pytest==8.4.1
+pytest-asyncio==1.0.0

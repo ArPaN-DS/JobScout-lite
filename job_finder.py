@@ -1,11 +1,11 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
-║           ARPAN'S AI JOB FINDER — job_finder.py             ║
+║               LOCAL AI JOB FINDER — job_finder.py            ║
 ║  Searches all portals → Scores with Ollama → Sends Telegram ║
 ╚══════════════════════════════════════════════════════════════╝
 
 SETUP (run once in PowerShell):
-  cd C:\assistant
+  cd \path\to\project
   .\assist_enve\Scripts\activate
   pip install python-jobspy requests beautifulsoup4 httpx python-telegram-bot
 
@@ -37,56 +37,25 @@ TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 OLLAMA_URL      = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
 OLLAMA_MODEL    = os.getenv("OLLAMA_MODEL", "qwen3:4b")
-MATCH_THRESHOLD = 60                          # Only send jobs 60%+ match
+MATCH_THRESHOLD = int(os.getenv("MATCH_THRESHOLD", "60")) # Only send jobs above this match score
 
 # ─────────────────────────────────────────────
-# ARPAN'S FULL PROFILE (used for matching)
+# CANDIDATE PROFILE (Loaded from profiles/my_profile.md)
 # ─────────────────────────────────────────────
 
-ARPAN_PROFILE = """
-Name: Arpan Majumdar
-Role: ML/NLP/AI Engineer (Fresher/Early Career)
-Location: West Bengal, India — open to remote & relocation
-
-EDUCATION:
-- M.Sc. Data Science, University of Kalyani (2023-2025), CGPA: 7.75
-- B.Sc. Computer Science, Memari College (2020-2023), CGPA: 9.1
-
-PUBLICATIONS & ACHIEVEMENTS:
-- ACL 2025 (SemEval), Vienna — Ranked 22nd globally (50+ teams)
-- CLEF 2025 (CheckThat!), Madrid — Ranked 9th globally, Macro F1=0.8262
-- DRDO-Funded research (under review) — 86.08% accuracy
-- NeuroHack 2026 at IIT Guwahati — Rank 34
-
-TARGET ROLES (in priority):
-1. ML Engineer
-2. AI Engineer
-3. GenAI/Generative AI Engineer
-4. NLP Engineer / NLP Researcher
-5. Data Scientist
-6. Speech AI Engineer
-7. AI Research Engineer
-
-KEY TECHNICAL SKILLS:
-- PyTorch, TensorFlow, Hugging Face Transformers, Scikit-learn
-- WavLM, ECAPA-TDNN, Wav2Vec2, Whisper (Speech AI)
-- BERT, XLM-RoBERTa, GPT-4o, Gemini, LLaMA3, Qwen, DeepSeek
-- RAG, FAISS, Milvus, LangChain, ReAct Agents
-- Django, FastAPI, Flask, WebSockets, REST APIs
-- Docker, AWS, MLflow, Linux
-- Fine-tuning, LoRA/QLoRA, Multi-task Learning, AMP
-
-EXPERIENCE:
-- 2+ years production AI systems (speech, NLP, GenAI, MLOps)
-- Audio deepfake detection (multi-task WavLM model)
-- Forensic speaker recognition system (ECAPA-TDNN)
-- Neuro-symbolic agentic RAG pipeline
-- Real-time multimodal meeting AI
-- Credit risk scoring (R²=97.7%)
-- LLM-powered data extraction pipelines
-
-AVOID: Sales, marketing, non-technical, data entry, no-AI roles
+PROFILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "my_profile.md")
+if os.path.exists(PROFILE_PATH):
+    with open(PROFILE_PATH, "r", encoding="utf-8") as f:
+        CANDIDATE_PROFILE = f.read()
+else:
+    CANDIDATE_PROFILE = """
+Role: AI/ML Engineer
+Skills: Python, PyTorch, Large Language Models, NLP
+Location: Remote / Open to relocation
 """
+    print(f"⚠️  Warning: {PROFILE_PATH} not found. Using default placeholder profile.")
+    print("Please create profiles/my_profile.md using profiles/my_profile.example.md as a template.")
+
 
 # ─────────────────────────────────────────────
 # JOB SEARCH QUERIES
@@ -342,11 +311,11 @@ def search_foundit(query: str) -> list[dict]:
 # ─────────────────────────────────────────────
 
 async def score_job_match(job: dict, client: httpx.AsyncClient) -> int:
-    """Ask Ollama to score job match against Arpan's profile. Returns 0-100."""
+    """Ask Ollama to score job match against the candidate profile. Returns 0-100."""
     prompt = f"""You are a job matching assistant. Score how well this job matches the candidate profile.
 
 CANDIDATE PROFILE:
-{ARPAN_PROFILE}
+{CANDIDATE_PROFILE}
 
 JOB:
 Title: {job['title']}
@@ -355,7 +324,7 @@ Location: {job['location']}
 Description: {job['description'][:1000]}
 
 Reply with ONLY a JSON object like this: {{"score": 75, "reason": "Strong NLP match"}}
-Score 0-100. Be strict. Score above 60 only if the job genuinely matches the candidate's ML/NLP/AI skills."""
+Score 0-100. Be strict. Score above 60 only if the job genuinely matches the candidate's skills."""
 
     try:
         response = await client.post(OLLAMA_URL, json={
@@ -426,7 +395,7 @@ async def main():
     last_progress_time = [datetime.now()]  # mutable for nested function
 
     print(f"\n{'='*60}")
-    print(f"  🔍 ARPAN'S JOB FINDER — {start_time.strftime('%d %b %Y, %I:%M %p')}")
+    print(f"  🔍 LOCAL AI JOB FINDER — {start_time.strftime('%d %b %Y, %I:%M %p')}")
     print(f"{'='*60}\n")
 
     async def maybe_send_progress(message: str):
@@ -622,13 +591,13 @@ if __name__ == "__main__":
 # ─────────────────────────────────────────────
 # Open PowerShell as Administrator and run:
 #
-# $action  = New-ScheduledTaskAction -Execute "C:\assistant\assist_enve\Scripts\python.exe" `
-#              -Argument "C:\assistant\job_finder.py" `
-#              -WorkingDirectory "C:\assistant"
+# $action  = New-ScheduledTaskAction -Execute "C:\personal_job_assist\assist_enve\Scripts\python.exe" `
+#              -Argument "C:\personal_job_assist\job_finder.py" `
+#              -WorkingDirectory "C:\personal_job_assist"
 #
 # $trigger = New-ScheduledTaskTrigger -AtLogOn
 #
-# Register-ScheduledTask -TaskName "ArpanJobFinder" `
+# Register-ScheduledTask -TaskName "LocalJobFinder" `
 #   -Action $action -Trigger $trigger `
 #   -RunLevel Highest -Force
 #

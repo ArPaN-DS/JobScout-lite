@@ -1,315 +1,151 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production-brightgreen?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/GPU-RTX_5050_100%25-76B900?style=for-the-badge&logo=nvidia" />
   <img src="https://img.shields.io/badge/Cost-$0/month-success?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Privacy-100%25_Local-blue?style=for-the-badge&logo=lock" />
+  <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" />
 </p>
 
-#  ARIA — Arpan's Ridiculously Intelligent Assistant
+# Local AI Job Finder & Assistant (LAJA)
 
-> A fully autonomous, GPU-accelerated personal AI system that runs entirely on local hardware — zero cloud costs, zero data leaks, maximum intelligence.
+> A fully autonomous, local AI assistant and job search agent that runs entirely on your own hardware — zero cloud costs, 100% data privacy, and zero reliance on expensive third-party APIs.
 
-ARIA is not a toy chatbot. It's a **production-grade AI pipeline** combining local LLM inference, multi-portal web scraping, AI-powered job matching, and Telegram-based delivery — all orchestrated through Docker containers and Windows Task Scheduler with zero human intervention after boot.
-
----
-
-##  What ARIA Does
-
-| Capability | Description | Status |
-|:---|:---|:---:|
-| **Daily AI Assistant** | Conversational chatbot via Telegram with persistent identity and personality (ARIA persona) | ✅ Live |
-| **Automated Job Finder** | Scrapes 8+ job portals → deduplicates → AI-scores against resume → sends ranked results to Telegram | ✅ Live |
-| **Resume Tailoring** | Reads master resume + job description → generates tailored resume summary via local LLM | ✅ Live |
-| **Auto-Start on Boot** | Everything launches automatically when the laptop opens — no manual commands | ✅ Live |
-| **One-Click Resource Control** | `START_AI.bat` / `STOP_AI.bat` to toggle the entire system for heavy developer workloads | ✅ Live |
+LAJA combines local LLM inference (via **Ollama**), automated multi-portal web scraping, AI-powered resume matching, and **Telegram** delivery into a production-grade workflow. You can schedule it to run daily or trigger it on-demand to scan portals, filter jobs that fit your profile, and receive a ranked summary on your phone.
 
 ---
 
-##  System Architecture
+## Key Features
+
+- 🔍 **Multi-Portal Scraping**: Scrapes multiple major platforms (LinkedIn, Indeed, Glassdoor, Naukri, Internshala, and more) concurrently.
+- 🧠 **Local AI Scoring**: Uses local models (like `qwen3:4b` or any Ollama-supported model) to read job descriptions and score them against your personal profile using strict guidelines.
+- 📱 **Telegram Delivery**: Sends ranked matching jobs (e.g. only those scoring 60%+) directly to your phone with direct links and the AI's reasoning.
+- 💬 **Conversational Chatbot**: Built-in optional Telegram chatbot with custom persona (`SOUL.md`) to talk to your local model on the go.
+- 💾 **Smart Deduplication**: Hashes jobs by company and title so you never receive the same notification twice.
+- ⏱️ **Auto-Start & Scheduling**: Easily integrates with Windows Task Scheduler or cron to run in the background on system boot.
+- 🔒 **100% Private**: Your resume, profile, and search history stay completely on your machine.
+
+---
+
+## Technical Pipeline
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        WINDOWS HOST                             │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐  │
-│  │ Task         │  │ START_AI.bat     │  │ STOP_AI.bat      │  │
-│  │ Scheduler    │  │ (one-click start)│  │ (one-click stop) │  │
-│  │ (on login)   │  └────────┬─────────┘  └──────────────────┘  │
-│  └──────┬───────┘           │                                   │
-│         │                   ▼                                   │
-│  ┌──────▼───────────────────────────────────────────────────┐   │
-│  │                   DOCKER ENGINE                          │   │
-│  │                                                          │   │
-│  │  ┌─────────────────────┐  ┌───────────────────────────┐  │   │
-│  │  │  OLLAMA CONTAINER   │  │  OPENCLAW CONTAINER       │  │   │
-│  │  │                     │  │                            │  │   │
-│  │  │  qwen3:fast (1.7B)  │  │  Gateway + Telegram Bot   │  │   │
-│  │  │  ├─ Chat responses  │  │  ├─ Identity (SOUL.md)    │  │   │
-│  │  │  │  (2.4GB VRAM)    │  │  ├─ Memory (per-session)  │  │   │
-│  │  │  │                  │  │  ├─ Web Search (DDG)       │  │   │
-│  │  │  │  qwen3:4b        │◄─┤  └─ Personality engine    │  │   │
-│  │  │  │  ├─ Job scoring  │  │                            │  │   │
-│  │  │  │  │  (3.5GB VRAM) │  └───────────────────────────-┘  │   │
-│  │  │  │  │               │                                  │   │
-│  │  │  └──┘               │         ┌────────────────────┐   │   │
-│  │  │  RTX 5050 (8GB)     │         │  job_finder.py     │   │   │
-│  │  │  100% GPU           │◄────────┤  (Python script)   │   │   │
-│  │  └─────────────────────┘         │  ├─ 8 portal       │   │   │
-│  │                                  │  │  scrapers        │   │   │
-│  └──────────────────────────────────┤  ├─ Deduplication   │   │   │
-│                                     │  ├─ AI scoring      │   │   │
-│                                     │  └─ Telegram push   │   │   │
-│                                     └────────────────────┘   │
-│                                                               │
-│  ┌────────────────────────────────────────────────────────┐   │
-│  │  LOCAL FILES (.gitignore protected)                    │   │
-│  │  ├─ .env (credentials)                                │   │
-│  │  ├─ profiles/my_profile.md (candidate profile)        │   │
-│  │  └─ resumes/master_resume.md (full resume source)     │   │
-│  └────────────────────────────────────────────────────────┘   │
-└───────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │   TELEGRAM API   │
-                    │   (User's Phone) │
-                    └──────────────────┘
+          [OS Task Scheduler / Boot]
+                      │
+                      ▼
+            [1. SCRAPE PORTALS]
+      Searches LinkedIn, Indeed, Glassdoor, 
+      Naukri, Internshala & Wellfound
+                      │
+                      ▼
+            [2. DEDUPLICATE CACHE]
+      Filters out already-seen job hashes
+                      │
+                      ▼
+             [3. AI MATCH SCORING]
+     Ollama (qwen3:4b) parses description 
+    against local profile & assigns score
+                      │
+                      ▼
+            [4. TELEGRAM PUSH]
+    Sends matches (e.g. >= 60%) to Telegram 
+       with fit percentage & reason
 ```
 
 ---
 
-##  Key Metrics
-
-| Metric | Value |
-|:---|:---|
-| Jobs scraped per run | **500+** across 8 portals |
-| Unique jobs after dedup | **~200** per scan |
-| Portals searched | LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Foundit, Wellfound, Company careers |
-| Match threshold | **≥60%** profile fit (AI-scored) |
-| Scoring model | `qwen3:4b` — accuracy-optimized |
-| Chat model | `qwen3:fast` (1.7B, 8K context) — speed-optimized |
-| GPU memory (chat) | **2.4 GB** / 8 GB available |
-| GPU memory (scoring) | **3.5 GB** / 8 GB available |
-| GPU utilization | **100%** (zero CPU spillover) |
-| Response latency (chat) | **3–8 seconds** |
-| Full job scan time | **45–60 minutes** (213 jobs scored individually) |
-| Cloud API costs | **$0/month** — entirely local |
-| Privacy | **100%** — no data leaves the machine |
-
----
-
-##  The Brain: Model Selection & Optimization
-
-A critical engineering decision was choosing the right model for each task within the constraints of an 8GB VRAM budget:
-
-| Model | Parameters | VRAM | Context | Purpose | Why This One? |
-|:---|:---|:---|:---|:---|:---|
-| `qwen3:8b` | 8B | 11 GB | 40K | ❌ Rejected | Exceeds VRAM → 35% CPU spillover, unacceptably slow |
-| `qwen3:4b` | 4B | 3.5 GB | 4K | ✅ Job scoring | Best accuracy-to-memory ratio for structured JSON output |
-| `qwen3:fast` | 1.7B | 2.4 GB | 8K | ✅ Daily chat | Custom Modelfile with `num_ctx 8192`; fast, fits fully in GPU |
-
-### VRAM Optimization Strategy
-```
-Problem:  qwen3:8b (default) → 11GB VRAM → spills to CPU → 3x slower
-Solution: Custom Modelfile with reduced context window
-
-# /tmp/Modelfile
-FROM qwen3:1.7b
-PARAMETER num_ctx 8192    ← reduced from 40960 (default)
-
-Result: 6.2GB → 2.4GB VRAM (62% reduction), zero quality loss for chat
-```
-
----
-
-##  Job Finder Pipeline — How It Works
-
-```
-STEP 1: COLLECTION (parallel scraping)
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│  LinkedIn    │ │   Indeed     │ │  Glassdoor   │ │   Naukri     │
-│  (JobSpy)    │ │  (JobSpy)   │ │  (JobSpy)    │ │  (BS4)       │
-└──────┬───────┘ └──────┬──────┘ └──────┬───────┘ └──────┬──────┘
-       │                │               │                │
-       └────────────────┴───────────────┴────────────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │  + Internshala (BS4)   │
-                    │  + Foundit (BS4)       │
-                    │  + Wellfound (regex)   │
-                    │  + Company pages       │
-                    └───────────┬───────────┘
-                                │
-                        ~500 raw jobs
-                                │
-STEP 2: DEDUPLICATION           ▼
-                    ┌───────────────────────┐
-                    │  Title + Company key   │
-                    │  normalization         │
-                    │  ~500 → ~213 unique    │
-                    └───────────┬───────────┘
-                                │
-STEP 3: AI SCORING              ▼
-                    ┌───────────────────────┐
-                    │  For each job:        │
-                    │  ┌─────────────────┐  │
-                    │  │ Candidate Profile│  │
-                    │  │ + Job Description│  │
-                    │  │ → qwen3:4b       │  │
-                    │  │ → JSON {score,   │  │
-                    │  │    reason}        │  │
-                    │  └─────────────────┘  │
-                    │  Temp: 0.1 (strict)   │
-                    │  Threshold: ≥60%      │
-                    └───────────┬───────────┘
-                                │
-STEP 4: DELIVERY                ▼
-                    ┌───────────────────────┐
-                    │  Sort by score (desc)  │
-                    │  Format HTML messages   │
-                    │  🟢 ≥80% | 🟡 ≥70%    │
-                    │  🔵 ≥60%               │
-                    │  Send to Telegram       │
-                    │  (max 30 jobs)          │
-                    └───────────────────────┘
-```
-
-### Search Queries (12 targeted queries)
-```
-NLP Engineer, ML Engineer, AI Engineer, Machine Learning Engineer, 
-Generative AI Engineer, GenAI Engineer, NLP Researcher, 
-Deep Learning Engineer, Speech AI Engineer, AI Research Engineer, 
-LLM Engineer, Data Scientist NLP
-```
-
-### Progress Monitoring
-The system sends **Telegram progress updates every 5 minutes** during operation:
-- Collection phase: queries completed, jobs found so far
-- Scoring phase: jobs scored, matches found, errors encountered
-- Completion: total time, final match count, ranked results
-
----
-
-##  ARIA's Personality Engine
-
-ARIA isn't a generic chatbot — she has a defined personality loaded via `SOUL.md` into OpenClaw's workspace:
-
-| Trait | Behavior |
-|:---|:---|
-| **Mysterious** | "Ah, Arpan. I had a feeling you'd ask that." |
-| **Playful** | "Another resume request? My circuits weep... but let's make it legendary." |
-| **Professional** | Switches instantly to sharp, precise mode for technical work |
-| **Self-aware** | "Even I have limits. Shocking, I know." |
-
-Identity is persisted through OpenClaw's `USER.md` + `SOUL.md` workspace files, ensuring ARIA always knows who Arpan is and maintains character across sessions.
-
----
-
-##  Tech Stack
-
-| Layer | Technology |
-|:---|:---|
-| **LLM Runtime** | Ollama (Docker container) |
-| **Models** | Qwen3 1.7B (chat), Qwen3 4B (scoring) |
-| **GPU** | NVIDIA RTX 5050 (8GB VRAM, 100% utilization) |
-| **Agent Framework** | OpenClaw (Docker container, gateway + memory + web search) |
-| **Web Scraping** | python-jobspy, BeautifulSoup4, requests, regex |
-| **Messaging** | Telegram Bot API (python-telegram-bot, httpx) |
-| **Async Runtime** | Python asyncio + httpx.AsyncClient |
-| **Automation** | Windows Task Scheduler (login trigger) |
-| **Credential Mgmt** | python-dotenv (.env file, gitignored) |
-| **Containerization** | Docker (restart: always, auto-boot) |
-| **Search** | DuckDuckGo (OpenClaw plugin, free, no API key) |
-
----
-
-##  Project Structure
-
-```
-Personal_Assist/
-├── bot.py                 # Telegram chatbot — routes messages to Ollama
-├── job_finder.py          # Multi-portal scraper + AI scorer + Telegram sender
-├── START_AI.bat           # One-click: start Docker containers + job finder
-├── STOP_AI.bat            # One-click: stop all AI services, free GPU
-├── SOUL.md                # ARIA personality definition (loaded into OpenClaw)
-├── .env                   # Credentials (TELEGRAM_TOKEN, OLLAMA_URL, etc.)
-├── .gitignore             # Excludes .env, profiles/, resumes/, venv
-├── ARCHITECTURE.md        # Technical architecture deep-dive
-├── DATA_FLOW.md           # Data flow diagrams (Mermaid)
-├── profiles/
-│   └── my_profile.md      # Candidate profile (target roles, skills, preferences)
-└── resumes/
-    └── master_resume.md   # Full master resume (all experience, publications)
-```
-
----
-
-##  Quick Start
+## Quick Start (5-Minute Setup)
 
 ### Prerequisites
-- **NVIDIA GPU** with 8GB+ VRAM
-- **Docker Desktop** (with WSL2 backend on Windows)
-- **Python 3.10+** with virtual environment
-- **Telegram** account + Bot Token from [@BotFather](https://t.me/BotFather)
+- **Python 3.10+**
+- **Ollama** installed locally (or running in Docker)
+- **Docker Desktop** (optional, for OpenClaw/Ollama containerization)
+- **Telegram Account** and a bot token from [@BotFather](https://t.me/BotFather)
 
-### 1. Clone & Setup
+### 1. Clone the Repo
 ```bash
 git clone https://github.com/ArPaN-DS/Personal_Assist.git
 cd Personal_Assist
+```
+
+### 2. Create Virtual Environment & Install Dependencies
+```bash
+# Create environment
 python -m venv assist_enve
-.\assist_enve\Scripts\activate        # Windows
-pip install python-jobspy requests beautifulsoup4 httpx python-telegram-bot python-dotenv
+
+# Activate environment (Windows)
+.\assist_enve\Scripts\activate
+
+# Activate environment (Linux/macOS)
+source assist_enve/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
 ```
 
-### 2. Configure `.env`
-```ini
-TELEGRAM_BOT_TOKEN=your_token_from_botfather
-TELEGRAM_CHAT_ID=your_telegram_user_id
-OLLAMA_URL=http://localhost:11434/api/chat
-OLLAMA_MODEL=qwen3:4b
-OLLAMA_BOT_MODEL=qwen3:fast
-```
+### 3. Set Up Configuration Files
+Copy the example files and customize them:
 
-### 3. Start Docker Containers
 ```bash
-# Ollama (LLM server)
-docker run -d --gpus all --restart always --name ollama -p 11434:11434 ollama/ollama
-docker exec -it ollama ollama pull qwen3:4b
-docker exec -it ollama ollama pull qwen3:1.7b
+# Copy environment configuration
+copy .env.example .env
 
-# Create optimized chat model
-docker exec -it ollama sh -c 'echo "FROM qwen3:1.7b\nPARAMETER num_ctx 8192" > /tmp/Modelfile && ollama create qwen3:fast -f /tmp/Modelfile'
-
-# OpenClaw (agent gateway + Telegram bridge)
-docker run -d --restart always --name openclaw -v C:\openclaw:/home/node/.openclaw -p 18789:18789 ghcr.io/openclaw/openclaw:latest
+# Copy profile and resume templates
+copy profiles\my_profile.example.md profiles\my_profile.md
+copy resumes\master_resume.example.md resumes\master_resume.md
+copy SOUL.example.md SOUL.md
 ```
 
-### 4. Run
+### 4. Configure environment variables in `.env`
+Open `.env` and fill in:
+- `USER_NAME` (your name)
+- `TELEGRAM_BOT_TOKEN` (from @BotFather)
+- `TELEGRAM_CHAT_ID` (from @userinfobot)
+- `OLLAMA_URL` (usually `http://localhost:11434/api/chat`)
+- `OLLAMA_MODEL` (e.g., `qwen3:4b`)
+
+### 5. Setup Local LLM
+Ensure Ollama is running and pull your preferred models:
 ```bash
-# Option A: Double-click START_AI.bat (recommended)
-# Option B: Manual
-python job_finder.py      # Run job scan
-python bot.py             # Run standalone chatbot (without OpenClaw)
+ollama pull qwen3:4b
+ollama pull qwen3:1.7b
 ```
 
 ---
 
-##  Security
+## Running the Application
 
-- **All credentials** stored in `.env` (gitignored — never pushed to GitHub)
-- **Personal data** (`profiles/`, `resumes/`) excluded from version control
-- **Telegram token** should be rotated periodically via [@BotFather](https://t.me/BotFather)
-- **100% local processing** — no data sent to cloud APIs
+### Running the Job Scanner
+This searches job portals, evaluates listings using your profile, and sends matches to Telegram:
+```bash
+python job_finder.py
+```
+
+### Running the Conversational Assistant
+This starts a standalone Telegram bot connecting you to your local model:
+```bash
+python bot.py
+```
+
+### Resource Control (Windows)
+Double-click `START_AI.bat` to spin up containers and run the job finder, or `STOP_AI.bat` to stop all services and free up GPU/RAM resources.
 
 ---
 
-##  License
+## Customizing Your Profile & Resume
 
-This is a personal project built for private use. Not intended for redistribution.
+### 1. Personal Profile (`profiles/my_profile.md`)
+The AI match-scoring model reads this file at runtime to evaluate job postings. Customize it with your target roles, key technical skills, and keywords to avoid (so the AI filters them out).
+
+### 2. Personality Engine (`SOUL.md`)
+If using the gateway, you can completely customize how your bot talks. Define rules, tone, and specific trigger responses to make your assistant unique.
+
+---
+
+## License
+
+This project is licensed under the permissive **MIT License** — feel free to fork, modify, and star! See the [LICENSE](file:///d:/personal_job_assist/LICENSE) file for details.
 
 ---
 
 <p align="center">
-  <b>Built by <a href="https://github.com/ArPaN-DS">Arpan Majumdar</a></b><br>
-  <i>ML/NLP Engineer · ACL 2025 · CLEF 2025 · RTX-powered local AI</i>
+  🌟 <b>If you find this project useful, please consider giving it a star!</b> 🌟
 </p>

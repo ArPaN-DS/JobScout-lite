@@ -281,5 +281,6 @@ This project is licensed under the [MIT License](LICENSE) — free to use, modif
 
 <p align="center">
   ⭐ <b>If this project helps your job search, please star the repo!</b> ⭐<br>
-  <sub>Built with local AI, zero cloud costs, and a lot of determination.</sub>
+  <sub>Built with local AI, zero cloud costs, and a lot of determination.</sub><br>
+  <sub>Made with ❤️ by Arpan</sub>
 </p>

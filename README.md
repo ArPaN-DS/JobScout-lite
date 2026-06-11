@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" />
 </p>
 
-# JobScout-Lite
+# <img src="https://img.shields.io/badge/JobScout--Lite-Local_AI_Recruitment_Agent-6366F1?style=for-the-badge&logo=opsgenie" height="40" />
 
 ### **Your Autonomous Local AI Recruiter & Personal Agent**
 
@@ -19,7 +19,7 @@
 
 ---
 
-## Why JobScout-Lite?
+## <img src="https://img.shields.io/badge/💡_Why_JobScout--Lite%3F-3B82F6?style=flat-square" height="24" />
 
 In a crowded job market, finding the right role shouldn't mean spending hours manually parsing listing boards or sending your personal resume to third-party scrapers.
 
@@ -32,7 +32,7 @@ In a crowded job market, finding the right role shouldn't mean spending hours ma
 
 ---
 
-## Features at a Glance
+## <img src="https://img.shields.io/badge/🛠️_Features_at_a_Glance-10B981?style=flat-square" height="24" />
 
 | Engine / Component | Capability | Tech Under the Hood |
 | :--- | :--- | :--- |
@@ -46,7 +46,7 @@ In a crowded job market, finding the right role shouldn't mean spending hours ma
 
 ---
 
-## How It Works
+## <img src="https://img.shields.io/badge/🏗️_How_It_Works-F59E0B?style=flat-square" height="24" />
 
 ```
           ┌─────────────────────────────┐
@@ -86,7 +86,7 @@ In a crowded job market, finding the right role shouldn't mean spending hours ma
 
 ---
 
-## Getting Started
+## <img src="https://img.shields.io/badge/🚀_Getting_Started-EF4444?style=flat-square" height="24" />
 
 ### Prerequisites
 
@@ -181,7 +181,7 @@ python -m pytest tests/ -v --tb=short
 ---
 
 
-## Project Structure
+## <img src="https://img.shields.io/badge/📁_Project_Structure-8B5CF6?style=flat-square" height="24" />
 
 ```
 JobScout-Lite/
@@ -223,7 +223,7 @@ JobScout-Lite/
 
 ---
 
-## Configuration Reference
+## <img src="https://img.shields.io/badge/🔧_Configuration_Reference-EC4899?style=flat-square" height="24" />
 
 ### Environment Variables (`.env`)
 
@@ -252,7 +252,7 @@ LLM Engineer, Data Scientist NLP
 
 ---
 
-## Security & Privacy
+## <img src="https://img.shields.io/badge/🛡️_Security_&_Privacy-14B8A6?style=flat-square" height="24" />
 
 > [!IMPORTANT]
 > **Data Protection & Zero-Trust Local Design:**
@@ -264,7 +264,7 @@ LLM Engineer, Data Scientist NLP
 
 ---
 
-## Contributing
+## <img src="https://img.shields.io/badge/🤝_Contributing-6B7280?style=flat-square" height="24" />
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -277,7 +277,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ---
 
-## License
+## <img src="https://img.shields.io/badge/📄_License-374151?style=flat-square" height="24" />
 
 This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute.
 

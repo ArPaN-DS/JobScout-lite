@@ -1,10 +1,10 @@
-# JobScout-Lite: Technical Architecture
+# <img src="https://img.shields.io/badge/JobScout--Lite-Technical_Architecture-6366F1?style=for-the-badge&logo=cpu" height="35" />
 
 This project is an entirely localized, GPU-accelerated autonomous personal assistant and job search agent. The architecture is designed to bypass traditional cloud API dependencies (like OpenAI GPT or Anthropic Claude) and leverage local consumer GPU/CPU hardware to perform production-grade orchestration and reasoning.
 
 ---
 
-## 1. Core Principles
+## <img src="https://img.shields.io/badge/1._Core_Principles-3B82F6?style=flat-square&logo=shield" height="24" />
 
 1. **Local-First Inferencing**: All LLM processing runs entirely on the host machine using Ollama. No data is sent over the internet to third-party providers, eliminating subscription costs and protecting your privacy.
 2. **Specialized Compute Delegation**: Different tasks are assigned to specifically tuned models. Lightweight, low-latency tasks can use a faster model (e.g. 1.7B-3B parameters), while complex structural reasoning and matching logic can use a larger model (e.g. 4B-8B parameters).
@@ -12,7 +12,7 @@ This project is an entirely localized, GPU-accelerated autonomous personal assis
 
 ---
 
-## 2. Infrastructure Layer
+## <img src="https://img.shields.io/badge/2._Infrastructure_Layer-10B981?style=flat-square&logo=server" height="24" />
 
 ### Hardware Base
 - **Host**: Windows 11 / Linux
@@ -24,7 +24,7 @@ This project is an entirely localized, GPU-accelerated autonomous personal assis
 
 ---
 
-## 3. The "Brain" Layer: Dynamic Model Switching & Classification
+## <img src="https://img.shields.io/badge/3._The_Brain_Layer-F59E0B?style=flat-square&logo=openai" height="24" />
 
 The system does not use a "one size fits all" LLM. Instead, it dynamically switches contexts over a unified REST API based on the incoming task payload:
 
@@ -35,7 +35,7 @@ The system does not use a "one size fits all" LLM. Instead, it dynamically switc
 
 ---
 
-## 4. The "Body" Layer: Modular Code Architecture
+## <img src="https://img.shields.io/badge/4._The_Body_Layer-8B5CF6?style=flat-square&logo=python" height="24" />
 
 The Python layer is structured as a modular package under `core/` to handle parallel tasks cleanly and support robust unit testing.
 
@@ -54,7 +54,7 @@ The Python layer is structured as a modular package under `core/` to handle para
 
 ---
 
-## 5. Security & Isolation
+## <img src="https://img.shields.io/badge/5._Security_&_Isolation-EF4444?style=flat-square&logo=lock" height="24" />
 
 - **Authentication Guard**: `bot.py` verifies incoming user messages against the configured `TELEGRAM_CHAT_ID`, rejecting unauthorized interactions.
 - **Token Protection**: Telegram bot tokens and API credentials are kept in a local `.env` file, which is excluded from version control via `.gitignore`.

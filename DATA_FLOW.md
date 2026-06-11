@@ -1,10 +1,10 @@
-# Data & Control Flow Diagrams
+# <img src="https://img.shields.io/badge/JobScout--Lite-Data_&_Control_Flow-6366F1?style=for-the-badge&logo=gitkraken" height="35" />
 
 The following charts outline the strict sequences in which data payloads move across the system boundaries without external dependency.
 
 ---
 
-## Phase 1: Real-Time Assistant Chat Flow
+## <img src="https://img.shields.io/badge/Phase_1-Real--Time_Chat_Flow-3B82F6?style=flat-square&logo=telegram" height="24" />
 
 This process occurs asynchronously anytime a message is sent over Telegram.
 
@@ -36,7 +36,7 @@ sequenceDiagram
 
 ---
 
-## Phase 2: Autonomous Job Scoring Pipeline
+## <img src="https://img.shields.io/badge/Phase_2-Autonomous_Job_Pipeline-10B981?style=flat-square&logo=probot" height="24" />
 
 This process happens purely automatically based on the OS Scheduler / Startup trigger.
 
@@ -89,7 +89,7 @@ sequenceDiagram
 
 ---
 
-## VRAM Context Allocation Diagram (Example for 8GB GPU)
+## <img src="https://img.shields.io/badge/Context_Allocation-VRAM_Diagram-F59E0B?style=flat-square&logo=nvidia" height="24" />
 
 ```mermaid
 pie title Example VRAM Allocation (8GB GPU)

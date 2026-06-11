@@ -1,6 +1,6 @@
-#  ARIA: Data & Control Flow Diagrams
+# Data & Control Flow Diagrams
 
-The following charts outline the strict sequences in which Data payloads move across the GPU limits and Web boundaries without external dependency.
+The following charts outline the strict sequences in which data payloads move across the system boundaries without external dependency.
 
 ---
 
@@ -16,7 +16,7 @@ sequenceDiagram
     participant Python as bot.py (Webhook Listener)
     participant OpenClaw as OpenClaw Container
     participant Ollama as Ollama API
-    participant GPU as RTX 5050 (qwen3:fast)
+    participant GPU as Local GPU (Chat Model)
 
     User->>Tele: text: "Summarize this paper"
     Tele->>Python: Event Trigger: on_message()
@@ -27,7 +27,7 @@ sequenceDiagram
     OpenClaw->>OpenClaw: Load SOUL.md (Persona)
     OpenClaw->>OpenClaw: Prepend historical chat logs
     OpenClaw->>Ollama: POST /api/generate {model: fast, prompt}
-    Ollama->>GPU: Load layers to VRAM (2.4GB)
+    Ollama->>GPU: Load layers to VRAM
     GPU-->>Ollama: Inference Tokens
     end
     
@@ -41,17 +41,17 @@ sequenceDiagram
 
 ## Phase 2: Autonomous Job Scoring Pipeline
 
-This process happens purely automatically based on the Windows Scheduler trigger limit.
+This process happens purely automatically based on the OS Scheduler trigger.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant OS as Windows Login Scheduler
+    participant OS as OS Task Scheduler
     participant JobFinder as job_finder.py
     participant Web as Internet Portals (LinkedIn, Indeed)
     participant Memory as Local Cache
     participant Ollama as Ollama API
-    participant GPU as RTX 5050 (qwen3:4b)
+    participant GPU as Local GPU (Scoring Model)
 
     OS->>JobFinder: Execute python script
     
@@ -64,13 +64,13 @@ sequenceDiagram
     JobFinder->>JobFinder: Parse & Clean HTML -> Text
     
     JobFinder->>Memory: Check existing hashes (Company+Title)
-    Memory-->>JobFinder: Return 213 novel posts
+    Memory-->>JobFinder: Return novel posts
     
     rect rgb(40, 20, 20)
-    Note over JobFinder,GPU: Step 2: Scoring Constraints
+    Note over JobFinder,GPU: Step 2: AI Scoring
     loop For Every Unique Job
         JobFinder->>Ollama: POST /api/generate {prompt: Profile + JobText}
-        Ollama->>GPU: Infer via qwen3:4b (3.5GB VRAM)
+        Ollama->>GPU: Infer via scoring model
         GPU-->>Ollama: Return strict JSON
         Ollama-->>JobFinder: { "score": 88, "reason": "Match on PyTorch" }
     end
@@ -83,12 +83,12 @@ sequenceDiagram
 
 ---
 
-## VRAM Context Allocation Diagram
+## VRAM Context Allocation Diagram (Example for 8GB GPU)
 
 ```mermaid
-pie title Hard Threshold VRAM Limits (8GB Maximum)
-    "Windows OS/Chrome Buffer" : 2
-    "qwen3:fast (Chat Instance)" : 2.4
-    "qwen3:4b (Scoring Engine)" : 3.5
+pie title Example VRAM Allocation (8GB GPU)
+    "OS / System Buffer" : 2
+    "Chat Model (e.g. qwen3:fast)" : 2.4
+    "Scoring Model (e.g. qwen3:4b)" : 3.5
 ```
 *(If both models are kept in memory correctly via careful context window clipping, zero spillover occurs, preserving maximum Tokens/Sec).*

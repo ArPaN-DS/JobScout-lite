@@ -1,9 +1,43 @@
+# ===== Virtual Environments =====
 assist_enve/
+venv/
+.venv/
+env/
+
+# ===== Python =====
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 
-# Exclude credentials and local data
+# ===== Credentials & Secrets =====
 .env
-profiles/
-resumes/
+
+# ===== Personal Data (NEVER commit these) =====
+profiles/my_profile.md
+resumes/master_resume.md
+SOUL.md
+
+# ===== Logs & Cache =====
 *.log
+jobs_cache/
+
+# ===== OS Generated =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# ===== Misc =====
+backup_private/

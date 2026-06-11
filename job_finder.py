@@ -5,9 +5,9 @@
 ╚══════════════════════════════════════════════════════════════╝
 
 SETUP (run once in PowerShell):
-  cd \path\to\project
+  cd <your-project-directory>
   .\assist_enve\Scripts\activate
-  pip install python-jobspy requests beautifulsoup4 httpx python-telegram-bot
+  pip install -r requirements.txt
 
 USAGE:
   python job_finder.py
@@ -23,8 +23,6 @@ import re
 import os
 from datetime import datetime, timedelta
 from typing import Optional
-
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -591,9 +589,9 @@ if __name__ == "__main__":
 # ─────────────────────────────────────────────
 # Open PowerShell as Administrator and run:
 #
-# $action  = New-ScheduledTaskAction -Execute "C:\personal_job_assist\assist_enve\Scripts\python.exe" `
-#              -Argument "C:\personal_job_assist\job_finder.py" `
-#              -WorkingDirectory "C:\personal_job_assist"
+# $action  = New-ScheduledTaskAction -Execute "<YOUR_PROJECT_DIR>\assist_enve\Scripts\python.exe" `
+#              -Argument "<YOUR_PROJECT_DIR>\job_finder.py" `
+#              -WorkingDirectory "<YOUR_PROJECT_DIR>"
 #
 # $trigger = New-ScheduledTaskTrigger -AtLogOn
 #

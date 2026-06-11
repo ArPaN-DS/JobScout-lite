@@ -5,46 +5,48 @@
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" />
 </p>
 
-# 🔍 JobScout-Lite
+# JobScout-Lite
 
 ### **Your Autonomous Local AI Recruiter & Personal Agent**
 
 > **Open your device, and your agent silently starts working in the background to find jobs where you are the best fit, auto-drafting a personalized cover letter/application pitch for each matched role.** JobScout-Lite is a fully autonomous, GPU-accelerated AI recruiting agent that works for *you*. It scrapes major job portals, filters matches against your profile, scores compatibility using locally-run LLMs via Ollama, and delivers structured, prioritized reports straight to your Telegram. 100% Private. 100% Free. 100% Local.
 
 <p align="center">
-  <a href="#-features-at-a-glance"><img src="https://img.shields.io/badge/Features-Local_AI-blueviolet?style=flat-square" /></a>
-  <a href="#-quick-start"><img src="https://img.shields.io/badge/Get_Started-5_Minutes-success?style=flat-square" /></a>
+  <a href="#features-at-a-glance"><img src="https://img.shields.io/badge/Features-Local_AI-blueviolet?style=flat-square" /></a>
+  <a href="#getting-started"><img src="https://img.shields.io/badge/Get_Started-5_Minutes-success?style=flat-square" /></a>
   <a href="https://github.com/ArPaN-DS/JobScout-lite/stargazers"><img src="https://img.shields.io/github/stars/ArPaN-DS/JobScout-lite?style=flat-square&color=gold" /></a>
 </p>
 
 ---
 
-## 💡 Why JobScout-Lite?
+## Why JobScout-Lite?
 
-In a crowded job market, finding the right role shouldn't mean spending hours manually parsing listing boards or sending your personal resume to third-party scrapers. 
+In a crowded job market, finding the right role shouldn't mean spending hours manually parsing listing boards or sending your personal resume to third-party scrapers.
 
-* 💸 **Zero API Cost**: Powered entirely by state-of-the-art local SLMs/LLMs (like `Qwen2.5` / `Qwen3` / `Llama3`). No OpenAI API tokens or subscriptions required.
-* 🔒 **Ultimate Privacy**: Your resume, skills, target compensation, and locations never leave your machine.
-* ⚡ **Smart Filtering**: The two-stage pre-filtering engine ensures you don't waste precious GPU cycles or time scanning irrelevant matches.
-* 💬 **Double-Agent Utility**: Includes both an automated **Pipeline Orchestrator** (to run on system boot) and an interactive **Conversational Chatbot** (with custom personality via `SOUL.md`).
+> [!NOTE]
+> **Key Value Propositions:**
+> * **Zero API Cost**: Powered entirely by state-of-the-art local SLMs/LLMs (like `Qwen2.5` / `Qwen3` / `Llama3`). No OpenAI API tokens or subscriptions required.
+> * **Ultimate Privacy**: Your resume, skills, target compensation, and locations never leave your machine.
+> * **Smart Filtering**: The two-stage pre-filtering engine ensures you don't waste precious GPU cycles or time scanning irrelevant matches.
+> * **Double-Agent Utility**: Includes both an automated **Pipeline Orchestrator** (to run on system boot) and an interactive **Conversational Chatbot** (with custom personality via `SOUL.md`).
 
 ---
 
-## 🛠️ Features at a Glance
+## Features at a Glance
 
 | Engine / Component | Capability | Tech Under the Hood |
 | :--- | :--- | :--- |
-| **🌐 Aggregator Scraper** | Parallel scraping across LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Wellfound, and Foundit. | `python-jobspy` + `BeautifulSoup` + `asyncio` |
-| **⚡ Stage-1 Pre-Filter** | Filters out obvious mismatch roles instantly based on profile keywords before invoking LLM logic. | Python RegEx (Instant, 0 GPU cost) |
-| **🧠 Stage-2 LLM Classifier** | Classifies compatibility into `STRONG_MATCH`, `GOOD_MATCH`, or `NO_MATCH` with structured JSON reasons. | `Ollama` + SLM (`qwen3:4b` / `llama3`) |
-| **📱 Telegram Delivery** | Instantly dispatches ranked job detail cards, direct apply links, and AI matching explanations. | `python-telegram-bot` + Markdown formatting |
-| **💬 Interactive Chatbot** | A conversational companion bot with conversation memory and custom personality injection (`SOUL.md`). | `python-telegram-bot` + `httpx` stream |
-| **💾 Smart Cache** | Hash-based deduplication ensuring you never see the same job post twice across separate runs. | JSON local database store |
-| **⏱️ Wake & Sleep Scheduler** | Runs silently in the background on startup, processes new postings, and automatically unloads models. | Windows Task Scheduler / Startup batch scripts |
+| **Aggregator Scraper** | Parallel scraping across LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Wellfound, and Foundit. | `python-jobspy` + `BeautifulSoup` + `asyncio` |
+| **Stage-1 Pre-Filter** | Filters out obvious mismatch roles instantly based on profile keywords before invoking LLM logic. | Python RegEx (Instant, 0 GPU cost) |
+| **Stage-2 LLM Classifier** | Classifies compatibility into `STRONG_MATCH`, `GOOD_MATCH`, or `NO_MATCH` with structured JSON reasons. | `Ollama` + SLM (`qwen3:4b` / `llama3`) |
+| **Telegram Delivery** | Instantly dispatches ranked job detail cards, direct apply links, and AI matching explanations. | `python-telegram-bot` + Markdown formatting |
+| **Interactive Chatbot** | A conversational companion bot with conversation memory and custom personality injection (`SOUL.md`). | `python-telegram-bot` + `httpx` stream |
+| **Smart Cache** | Hash-based deduplication ensuring you never see the same job post twice across separate runs. | JSON local database store |
+| **Wake & Sleep Scheduler** | Runs silently in the background on startup, processes new postings, and automatically unloads models. | Windows Task Scheduler / Startup batch scripts |
 
 ---
 
-## 🏗️ How It Works
+## How It Works
 
 ```
           ┌─────────────────────────────┐
@@ -84,7 +86,7 @@ In a crowded job market, finding the right role shouldn't mean spending hours ma
 
 ---
 
-## 🚀 Quick Start
+## Getting Started
 
 ### Prerequisites
 
@@ -179,7 +181,7 @@ python -m pytest tests/ -v --tb=short
 ---
 
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 JobScout-Lite/
@@ -221,20 +223,20 @@ JobScout-Lite/
 
 ---
 
-## 🔧 Configuration Reference
+## Configuration Reference
 
 ### Environment Variables (`.env`)
 
 | Variable | Required | Description |
 |:---|:---:|:---|
-| `USER_NAME` | ✅ | Your name (used in bot system prompt) |
-| `TELEGRAM_BOT_TOKEN` | ✅ | Bot token from [@BotFather](https://t.me/BotFather) |
-| `TELEGRAM_CHAT_ID` | ✅ | Your personal chat ID from [@userinfobot](https://t.me/userinfobot) |
-| `OLLAMA_URL` | ❌ | Ollama API endpoint (default: `http://localhost:11434/api/chat`) |
-| `OLLAMA_MODEL` | ❌ | Model for job classification (default: `qwen3:4b`) |
-| `OLLAMA_BOT_MODEL` | ❌ | Model for chatbot (default: `qwen3:fast`) |
-| `LOG_LEVEL` | ❌ | Logging level: DEBUG, INFO, WARNING, ERROR (default: `INFO`) |
-| `CACHE_DIR` | ❌ | Deduplication cache folder name (default: `jobs_cache`) |
+| `USER_NAME` | Yes | Your name (used in bot system prompt) |
+| `TELEGRAM_BOT_TOKEN` | Yes | Bot token from [@BotFather](https://t.me/BotFather) |
+| `TELEGRAM_CHAT_ID` | Yes | Your personal chat ID from [@userinfobot](https://t.me/userinfobot) |
+| `OLLAMA_URL` | No | Ollama API endpoint (default: `http://localhost:11434/api/chat`) |
+| `OLLAMA_MODEL` | No | Model for job classification (default: `qwen3:4b`) |
+| `OLLAMA_BOT_MODEL` | No | Model for chatbot (default: `qwen3:fast`) |
+| `LOG_LEVEL` | No | Logging level: DEBUG, INFO, WARNING, ERROR (default: `INFO`) |
+| `CACHE_DIR` | No | Deduplication cache folder name (default: `jobs_cache`) |
 
 ### Search Queries
 
@@ -250,17 +252,19 @@ LLM Engineer, Data Scientist NLP
 
 ---
 
-## 🛡️ Security & Privacy
+## Security & Privacy
 
-- **All credentials** in `.env` → gitignored, never pushed
-- **Your profile & resume** → gitignored, never pushed
-- **100% local processing** → no data sent to cloud APIs
-- **Telegram token** → rotate periodically via [@BotFather](https://t.me/BotFather)
-- **Git history** → cleaned of any sensitive data
+> [!IMPORTANT]
+> **Data Protection & Zero-Trust Local Design:**
+> * **All credentials** in `.env` are excluded from Git tracking via `.gitignore`.
+> * **Your profile & resume** stay fully local and are never committed.
+> * **100% local processing** ensures no data is sent to external APIs or cloud services.
+> * **Telegram token** can be rotated periodically via [@BotFather](https://t.me/BotFather).
+> * **Git history** has been thoroughly cleaned of any sensitive data.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -273,7 +277,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute.
 

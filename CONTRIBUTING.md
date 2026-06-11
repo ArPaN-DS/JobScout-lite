@@ -1,4 +1,4 @@
-# Contributing to Local AI Job Finder & Assistant
+# Contributing to JobScout-Lite
 
 We love contributions! Whether you are reporting a bug, proposing a new scraping portal, or optimizing local model prompt engineering, your help is highly appreciated.
 

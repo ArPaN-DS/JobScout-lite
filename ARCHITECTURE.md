@@ -1,4 +1,4 @@
-# Local AI Job Finder & Assistant: Technical Architecture
+# JobScout-Lite: Technical Architecture
 
 This project is an entirely localized, GPU-accelerated autonomous personal assistant and job search agent. The architecture is designed to bypass traditional cloud API dependencies (like OpenAI GPT or Anthropic Claude) and leverage local consumer GPU/CPU hardware to perform production-grade orchestration and reasoning.
 
@@ -11,13 +11,6 @@ This project is an entirely localized, GPU-accelerated autonomous personal assis
 3. **Scheduled Lifecycle**: The system wakes up autonomously (via OS Task Scheduler), executes a high-compute workload (scraping + reasoning), delivers matched results to your phone, and exits.
 
 ---
-
-## 2. Infrastructure Layer
-
-### Hardware Base
-- **Host**: Windows 11 / Linux
-- **VRAM Constraint Engine**: The fundamental design constraint is fitting LLMs within your GPU's VRAM. If memory spills over to system RAM, the LLM inferences slow down. Therefore, context windows are optimized.
-- **CPU Fallback**: Can run on CPU (using Ollama's CPU inference), although GPU execution is highly recommended for speed.
 
 ## 2. Infrastructure Layer
 

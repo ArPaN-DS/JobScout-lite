@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" />
 </p>
 
-# 🔍 Local AI Job Finder & Assistant
+# 🔍 JobScout-Lite: Local AI Job Finder & Assistant
 
 > **A fully autonomous, GPU-accelerated AI system that scrapes job portals, scores matches against your resume using a local LLM, and sends ranked results to your phone — all running on your own machine. Zero cloud costs. 100% privacy.**
 
@@ -77,8 +77,8 @@
 ### Step 1: Clone & Install
 
 ```bash
-git clone https://github.com/ArPaN-DS/Personal_Assist.git
-cd Personal_Assist
+git clone https://github.com/ArPaN-DS/JobScout-lite.git
+cd JobScout-lite
 
 # Create virtual environment
 python -m venv assist_enve
@@ -163,7 +163,7 @@ python -m pytest tests/ -v --tb=short
 ## 📁 Project Structure
 
 ```
-Personal_Assist/
+JobScout-Lite/
 ├── bot.py                           # Conversational Telegram bot (with memory/auth)
 ├── job_finder.py                    # Autonomous pipeline orchestrator wrapper
 ├── core/                            # Core functionality package

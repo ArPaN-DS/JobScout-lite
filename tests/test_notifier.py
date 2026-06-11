@@ -40,6 +40,16 @@ class TestFormatJobMessage:
         assert "Test Job" in msg
         assert "Unknown" in msg  # fallback for missing company/location
 
+    def test_includes_tailored_pitch(self):
+        job = {
+            "title": "NLP Engineer",
+            "match_tier": "STRONG_MATCH",
+            "tailored_pitch": "I am a strong candidate because of my NLP expertise."
+        }
+        msg = format_job_message(job, rank=1)
+        assert "Personalized Application Pitch" in msg
+        assert "I am a strong candidate because of my NLP expertise." in msg
+
 
 class TestAuthorization:
     def test_authorized_chat_passes(self, monkeypatch):

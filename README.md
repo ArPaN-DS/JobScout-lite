@@ -9,7 +9,7 @@
 
 ### **Your Autonomous Local AI Recruiter & Personal Agent**
 
-> **JobScout-Lite is a fully autonomous, GPU-accelerated AI recruiting agent that works for *you*. It scrapes major job portals, filters matches against your profile, scores compatibility using locally-run LLMs via Ollama, and delivers structured, prioritized reports straight to your Telegram. 100% Private. 100% Free. 100% Local.**
+> **Open your device, and your agent silently starts working in the background to find jobs where you are the best fit, auto-drafting a personalized cover letter/application pitch for each matched role.** JobScout-Lite is a fully autonomous, GPU-accelerated AI recruiting agent that works for *you*. It scrapes major job portals, filters matches against your profile, scores compatibility using locally-run LLMs via Ollama, and delivers structured, prioritized reports straight to your Telegram. 100% Private. 100% Free. 100% Local.
 
 <p align="center">
   <a href="#-features-at-a-glance"><img src="https://img.shields.io/badge/Features-Local_AI-blueviolet?style=flat-square" /></a>

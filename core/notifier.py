@@ -38,6 +38,11 @@ def format_job_message(job: dict, rank: int) -> str:
     emoji = get_match_emoji(match_tier)
     label = get_match_label(match_tier)
     reason = job.get("match_reason", "")
+    
+    pitch = job.get("tailored_pitch", "")
+    pitch_section = ""
+    if pitch:
+        pitch_section = f"\n\n📝 <b>Personalized Application Pitch:</b>\n<code>{pitch}</code>"
 
     return (
         f"{emoji} <b>#{rank} — {label}</b>\n"
@@ -47,6 +52,7 @@ def format_job_message(job: dict, rank: int) -> str:
         f"🌐 {job.get('source', 'Unknown')}\n"
         f"💡 {reason}\n"
         f"🔗 <a href='{job.get('apply_url', '#')}'>Apply Here</a>"
+        f"{pitch_section}"
     )
 
 

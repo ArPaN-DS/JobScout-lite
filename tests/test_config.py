@@ -1,5 +1,4 @@
-import pytest
-from core.config import load_profile, load_soul, setup_logging
+from core.config import load_profile, load_soul, load_resume, setup_logging
 
 
 class TestConfig:
@@ -17,3 +16,9 @@ class TestConfig:
         # May be empty if SOUL.md doesn't exist, but should not crash
         soul = load_soul()
         assert isinstance(soul, str)
+
+    def test_load_resume_returns_string(self):
+        # May fallback to placeholder but should return string and not crash
+        resume = load_resume()
+        assert isinstance(resume, str)
+        assert len(resume) > 0

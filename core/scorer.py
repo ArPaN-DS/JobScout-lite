@@ -261,3 +261,80 @@ def get_match_emoji(match_tier: str) -> str:
 
 def get_match_label(match_tier: str) -> str:
     return MATCH_TIERS.get(match_tier, MATCH_TIERS["SKIP"])["label"]
+
+
+# ─── Cover Letter / Application Pitch Generator ───
+
+PITCH_SYSTEM_PROMPT = """You are a professional career agent. You write a concise, highly persuasive cover letter / application pitch (under 150 words) matching the candidate's resume to a specific job description.
+
+Rules:
+- Write in first person ("I").
+- Address the hiring team professionally.
+- Highlight 2-3 specific skills/projects from the resume that directly match the job requirements.
+- Keep the tone confident, clean, and professional.
+- Do NOT include any placeholders like [Date], [Company Name], or [Your Name] — write a complete, ready-to-send copy.
+- Output ONLY the pitch. No preamble, no postscript, no thinking tokens."""
+
+
+async def generate_personalized_pitch(
+    job: dict,
+    resume_text: str,
+    client: httpx.AsyncClient,
+    max_retries: int = 2
+) -> str:
+    """
+    Generate a tailored application pitch/cover letter matching the resume to the job.
+    """
+    # Truncate inputs to prevent model context spillover
+    resume_truncated = resume_text[:1200]
+    description = job.get("description", "")[:800]
+
+    user_prompt = f"""Candidate Resume:
+{resume_truncated}
+
+Job Title: {job['title']}
+Company: {job.get('company', 'Unknown')}
+Location: {job.get('location', 'Unknown')}
+Description: {description}
+
+Write a tailored cover letter / application pitch matching my resume to this job:"""
+
+    for attempt in range(max_retries + 1):
+        try:
+            response = await client.post(OLLAMA_URL, json={
+                "model": OLLAMA_MODEL,
+                "messages": [
+                    {"role": "system", "content": PITCH_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "stream": False,
+                "keep_alive": "30s",
+                "options": {
+                    "temperature": 0.3,
+                    "num_ctx": 4096,
+                    "num_thread": 4,
+                }
+            }, timeout=120.0)
+
+            if response.status_code != 200:
+                if attempt < max_retries:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                return "Could not generate tailored pitch (Ollama status error)."
+
+            content = response.json().get("message", {}).get("content", "")
+            
+            # Clean qwen3 thinking tokens if present
+            if "<think>" in content:
+                content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+            
+            return content.strip()
+
+        except Exception as e:
+            logger.warning(f"Error generating pitch for '{job['title']}': {e}")
+            if attempt < max_retries:
+                await asyncio.sleep(2 ** attempt)
+                continue
+            return f"Could not generate tailored pitch: {str(e)[:50]}"
+
+    return "Could not generate tailored pitch."

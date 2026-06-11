@@ -15,12 +15,13 @@ from datetime import datetime
 
 from core.config import (
     OLLAMA_URL, OLLAMA_MODEL, SEARCH_QUERIES,
-    load_profile, setup_logging
+    load_profile, load_resume, setup_logging
 )
 from core.scrapers import search_all
 from core.scorer import (
     extract_profile_keywords, keyword_prefilter,
-    score_job_llm, get_match_emoji, get_match_label
+    score_job_llm, generate_personalized_pitch,
+    get_match_emoji, get_match_label
 )
 from core.cache import JobCache
 from core.notifier import send_telegram, format_job_message
@@ -36,6 +37,7 @@ async def main():
 
     # Load profile and extract keywords for pre-filtering
     profile_text = load_profile()
+    resume_text = load_resume()
     profile_keywords = extract_profile_keywords(profile_text)
     logger.info(f"Loaded profile with {len(profile_keywords)} keywords for pre-filtering")
 
@@ -98,12 +100,17 @@ async def main():
             job["match_tier"] = result["match"]
             job["match_reason"] = result.get("reason", "")
 
-            if result["match"] == "STRONG_MATCH":
-                strong_matches.append(job)
-                logger.info(f"    → 🟢 STRONG_MATCH: {result.get('reason', '')}")
-            elif result["match"] == "GOOD_MATCH":
-                good_matches.append(job)
-                logger.info(f"    → 🟡 GOOD_MATCH: {result.get('reason', '')}")
+            if result["match"] in ("STRONG_MATCH", "GOOD_MATCH"):
+                logger.info(f"    → Drafting personalized application pitch...")
+                pitch = await generate_personalized_pitch(job, resume_text, client)
+                job["tailored_pitch"] = pitch
+
+                if result["match"] == "STRONG_MATCH":
+                    strong_matches.append(job)
+                    logger.info(f"    → 🟢 STRONG_MATCH: {result.get('reason', '')}")
+                else:
+                    good_matches.append(job)
+                    logger.info(f"    → 🟡 GOOD_MATCH: {result.get('reason', '')}")
             elif result["match"] == "SKIP":
                 errors += 1
                 logger.warning(f"    → ⚪ SKIP (error): {result.get('reason', '')}")

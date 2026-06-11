@@ -14,6 +14,7 @@ load_dotenv()
 PROJECT_ROOT = Path(__file__).parent.parent
 PROFILE_PATH = PROJECT_ROOT / "profiles" / "my_profile.md"
 SOUL_PATH = PROJECT_ROOT / "SOUL.md"
+RESUME_PATH = PROJECT_ROOT / "resumes" / "master_resume.md"
 CACHE_DIR = PROJECT_ROOT / os.getenv("CACHE_DIR", "jobs_cache")
 LOG_DIR = PROJECT_ROOT / "logs"
 
@@ -85,6 +86,16 @@ def load_soul() -> str:
         # Replace {USER_NAME} placeholder with actual user name
         return content.replace("{USER_NAME}", USER_NAME)
     return ""
+
+def load_resume() -> str:
+    """Load the candidate resume from resumes/master_resume.md."""
+    if RESUME_PATH.exists():
+        return RESUME_PATH.read_text(encoding="utf-8")
+    else:
+        logging.getLogger("job_finder").warning(
+            f"Resume not found at {RESUME_PATH}. Using default placeholder."
+        )
+        return "Master Resume: Not configured."
 
 # ─── Search Queries ──────────────────────────────
 SEARCH_QUERIES = [

@@ -25,7 +25,11 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 # ─── Ollama ──────────────────────────────────────
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:4b")
-OLLAMA_BOT_MODEL = os.getenv("OLLAMA_BOT_MODEL", "qwen3:fast")
+UNIFY_OLLAMA_MODELS = os.getenv("UNIFY_OLLAMA_MODELS", "false").lower() in ("true", "1", "yes")
+if UNIFY_OLLAMA_MODELS:
+    OLLAMA_BOT_MODEL = OLLAMA_MODEL
+else:
+    OLLAMA_BOT_MODEL = os.getenv("OLLAMA_BOT_MODEL", "qwen3:fast")
 
 # ─── User ────────────────────────────────────────
 USER_NAME = os.getenv("USER_NAME", "User")

@@ -126,3 +126,38 @@ class TestKeywordPrefilter:
     def test_title_only_match(self):
         job = {"title": "ML NLP Engineer", "description": ""}
         assert keyword_prefilter(job, self.PROFILE_KEYWORDS) is True
+
+
+class TestDescriptionCompression:
+    def test_compress_description_strips_boilerplate(self):
+        from core.scorer import compress_description
+        desc = (
+            "We are seeking a Python Developer.\n"
+            "Equal Opportunity Employer: We value diversity and inclusion.\n"
+            "Benefits include healthcare and dental plans.\n"
+            "About the company: We are a top startup."
+        )
+        profile_kws = {"python"}
+        compressed = compress_description(desc, profile_kws, max_chars=500)
+        assert "Python" in compressed
+        assert "Equal Opportunity" not in compressed
+        assert "Benefits include" not in compressed
+
+    def test_compress_description_prioritizes_keywords(self):
+        from core.scorer import compress_description
+        desc = (
+            "First sentence describing the role generally.\n"
+            "Second sentence describing the role generally.\n"
+            "Third sentence describing the role generally.\n"
+            "Fourth sentence containing Java and Spring.\n"
+            "Fifth sentence containing Ruby and Rails.\n"
+            "Sixth sentence containing Python and PyTorch match.\n"
+            "Seventh sentence about office location."
+        )
+        profile_kws = {"python", "pytorch"}
+        # Limit characters to force compression
+        compressed = compress_description(desc, profile_kws, max_chars=200)
+        assert "Python" in compressed
+        assert "PyTorch" in compressed
+        assert "Java" not in compressed
+        assert "Ruby" not in compressed

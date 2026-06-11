@@ -128,3 +128,19 @@ class TestJobCache:
         loaded = load_chat_history()
         assert 12345 in loaded
         assert loaded[12345][0]["content"] == "hello"
+
+    def test_reasoned_feedback_loop(self, temp_cache_dir):
+        cache = JobCache(cache_dir=temp_cache_dir)
+        job = {"title": "Backend Lead", "company": "SystemCorp", "description": "Django, Postgres"}
+        cache.mark_seen(job)
+        short_id = cache._make_key(job)[:6]
+
+        # Set feedback with reason
+        success = cache.set_feedback(short_id, "dislike", "Django")
+        assert success is True
+
+        exemplars = cache.get_feedback_exemplars()
+        assert len(exemplars) == 1
+        assert exemplars[0]["title"] == "Backend Lead"
+        assert exemplars[0]["feedback"] == "dislike"
+        assert exemplars[0]["feedback_reason"] == "Django"

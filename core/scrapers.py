@@ -5,12 +5,38 @@ Includes LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Wellfound, and Foundi
 
 import re
 import time
+import random
+import asyncio
 import requests
 from bs4 import BeautifulSoup
 from jobspy import scrape_jobs
 from core.config import setup_logging
 
 logger = setup_logging("scrapers")
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0",
+]
+
+def get_random_headers() -> dict:
+    """Generate headers with rotated user agent and standard parameters."""
+    return {
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+    }
 
 
 def search_jobspy(query: str, hours_old: int = 24) -> list[dict]:
@@ -47,10 +73,7 @@ def search_naukri(query: str) -> list[dict]:
     try:
         query_slug = query.replace(" ", "-").lower()
         url = f"https://www.naukri.com/{query_slug}-jobs-in-india"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        }
+        headers = get_random_headers()
         r = requests.get(url, headers=headers, timeout=15)
         if r.status_code != 200:
             return jobs
@@ -97,7 +120,7 @@ def search_internshala(query: str) -> list[dict]:
     try:
         query_slug = query.replace(" ", "-").lower()
         url = f"https://internshala.com/jobs/{query_slug}-jobs"
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        headers = get_random_headers()
         r = requests.get(url, headers=headers, timeout=15)
         if r.status_code != 200:
             return jobs
@@ -141,7 +164,7 @@ def search_wellfound(query: str) -> list[dict]:
     jobs = []
     try:
         url = f"https://wellfound.com/jobs?q={query.replace(' ', '+')}&l=India"
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        headers = get_random_headers()
         r = requests.get(url, headers=headers, timeout=15)
         # Wellfound is JS-heavy — add basic fallback
         if "job" in r.text.lower() and r.status_code == 200:
@@ -169,7 +192,7 @@ def search_foundit(query: str) -> list[dict]:
     jobs = []
     try:
         url = f"https://www.foundit.in/search/{query.replace(' ', '-').lower()}-jobs-in-india"
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        headers = get_random_headers()
         r = requests.get(url, headers=headers, timeout=15)
         if r.status_code != 200:
             return jobs
@@ -208,41 +231,41 @@ def search_foundit(query: str) -> list[dict]:
     return jobs
 
 
-def search_all(queries: list[str]) -> list[dict]:
-    """Run all scrapers for all queries. Returns combined job list."""
+async def search_all(queries: list[str]) -> list[dict]:
+    """Run all scrapers for all queries concurrently using asyncio. Returns combined job list."""
     all_jobs = []
 
-    for idx, query in enumerate(queries):
-        logger.info(f"[{idx+1}/{len(queries)}] Searching: '{query}'")
+    async def run_scraper_async(scraper_func, query, name):
+        try:
+            loop = asyncio.get_running_loop()
+            jobs = await loop.run_in_executor(None, scraper_func, query)
+            logger.info(f"  {name} for '{query}': {len(jobs)} found")
+            return jobs
+        except Exception as e:
+            logger.warning(f"Error running {name} for '{query}': {e}")
+            return []
 
-        # jobspy (LinkedIn, Indeed, Glassdoor)
-        jobs = search_jobspy(query, hours_old=24)
-        logger.info(f"  LinkedIn/Indeed/Glassdoor: {len(jobs)} found")
-        all_jobs.extend(jobs)
+    tasks = []
+    for query in queries:
+        logger.info(f"Scheduling concurrent search for: '{query}'")
+        # Standard scrapers for all queries
+        tasks.append(run_scraper_async(search_jobspy, query, "LinkedIn/Indeed/Glassdoor"))
+        tasks.append(run_scraper_async(search_naukri, query, "Naukri"))
+        tasks.append(run_scraper_async(search_internshala, query, "Internshala"))
+        tasks.append(run_scraper_async(search_foundit, query, "Foundit"))
 
-        # Naukri
-        jobs = search_naukri(query)
-        logger.info(f"  Naukri: {len(jobs)} found")
-        all_jobs.extend(jobs)
+        # Wellfound only for key startup queries
+        if query in ["ML Engineer", "AI Engineer", "NLP Engineer", "GenAI Engineer", "Machine Learning Engineer", "Generative AI Engineer"]:
+            tasks.append(run_scraper_async(search_wellfound, query, "Wellfound"))
 
-        # Internshala
-        jobs = search_internshala(query)
-        logger.info(f"  Internshala: {len(jobs)} found")
-        all_jobs.extend(jobs)
-
-        # Foundit
-        jobs = search_foundit(query)
-        logger.info(f"  Foundit: {len(jobs)} found")
-        all_jobs.extend(jobs)
-
-        # Wellfound (only for key queries)
-        if query in ["ML Engineer", "AI Engineer", "NLP Engineer", "GenAI Engineer"]:
-            jobs = search_wellfound(query)
-            logger.info(f"  Wellfound: {len(jobs)} found")
-            all_jobs.extend(jobs)
-
-        # Be polite to servers
-        time.sleep(2)
+    # Execute all scraper queries concurrently
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    for res in results:
+        if isinstance(res, list):
+            all_jobs.extend(res)
+        elif isinstance(res, Exception):
+            logger.warning(f"Scraper task execution failed with exception: {res}")
 
     logger.info(f"Total collected: {len(all_jobs)} jobs from all portals")
     return all_jobs

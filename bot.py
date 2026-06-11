@@ -1,5 +1,6 @@
 """Telegram chatbot with conversation memory, SOUL.md personality, and auth."""
 
+import html
 import httpx
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
@@ -117,7 +118,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def handle_yes(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /yes <job_id> to register positive feedback."""
+    """Handle /yes <job_id> [reason] to register positive feedback."""
     if not update.message or not update.effective_chat:
         return
     chat_id = update.effective_chat.id
@@ -125,24 +126,26 @@ async def handle_yes(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if not context.args:
-        await update.message.reply_text("⚠️ Usage: /yes <job_id>\nExample: /yes abcd12")
+        await update.message.reply_text("⚠️ Usage: /yes <job_id> [reason]\nExample: /yes abcd12 high priority")
         return
 
     job_id = context.args[0]
+    reason = " ".join(context.args[1:]) if len(context.args) > 1 else None
     cache = JobCache()
-    if cache.set_feedback(job_id, "like"):
+    if cache.set_feedback(job_id, "like", reason):
         key = cache.find_key_by_short_id(job_id)
         job_info = cache._cache[key]
         title = job_info.get("title", "this role")
         company = job_info.get("company", "")
         company_str = f" @ {company}" if company else ""
-        await update.message.reply_text(f"🟢 <b>Feedback Saved:</b> Liked \"{title}{company_str}\". Local LLM will prioritize similar jobs in future runs.", parse_mode="HTML")
+        reason_str = f" (Reason: {reason})" if reason else ""
+        await update.message.reply_text(f"🟢 <b>Feedback Saved:</b> Liked \"{title}{company_str}\"{reason_str}. Local LLM will prioritize similar jobs in future runs.", parse_mode="HTML")
     else:
         await update.message.reply_text(f"❌ Could not find a job matching ID: <code>{job_id}</code>", parse_mode="HTML")
 
 
 async def handle_no(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /no <job_id> to register negative feedback."""
+    """Handle /no <job_id> [reason] to register negative feedback."""
     if not update.message or not update.effective_chat:
         return
     chat_id = update.effective_chat.id
@@ -150,18 +153,20 @@ async def handle_no(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if not context.args:
-        await update.message.reply_text("⚠️ Usage: /no <job_id>\nExample: /no abcd12")
+        await update.message.reply_text("⚠️ Usage: /no <job_id> [reason]\nExample: /no abcd12 Java")
         return
 
     job_id = context.args[0]
+    reason = " ".join(context.args[1:]) if len(context.args) > 1 else None
     cache = JobCache()
-    if cache.set_feedback(job_id, "dislike"):
+    if cache.set_feedback(job_id, "dislike", reason):
         key = cache.find_key_by_short_id(job_id)
         job_info = cache._cache[key]
         title = job_info.get("title", "this role")
         company = job_info.get("company", "")
         company_str = f" @ {company}" if company else ""
-        await update.message.reply_text(f"🔴 <b>Feedback Saved:</b> Disliked \"{title}{company_str}\". Local LLM will avoid similar jobs in future runs.", parse_mode="HTML")
+        reason_str = f" (Reason: {reason})" if reason else ""
+        await update.message.reply_text(f"🔴 <b>Feedback Saved:</b> Disliked \"{title}{company_str}\"{reason_str}. Local LLM will avoid similar jobs in future runs.", parse_mode="HTML")
     else:
         await update.message.reply_text(f"❌ Could not find a job matching ID: <code>{job_id}</code>", parse_mode="HTML")
 
@@ -226,6 +231,90 @@ async def handle_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(status_msg, parse_mode="HTML")
 
 
+async def handle_logs(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /logs to return the last 20 lines of the latest log file."""
+    if not update.message or not update.effective_chat:
+        return
+    chat_id = update.effective_chat.id
+    if not is_authorized_chat(chat_id):
+        return
+
+    from core.config import LOG_DIR
+    try:
+        if not LOG_DIR.exists():
+            await update.message.reply_text("📂 Logs directory does not exist.")
+            return
+
+        # Find the latest log file by modification time
+        log_files = list(LOG_DIR.glob("*.log"))
+        if not log_files:
+            await update.message.reply_text("📂 No log files found in the logs directory.")
+            return
+
+        latest_log = max(log_files, key=lambda f: f.stat().st_mtime)
+
+        # Read the last 20 lines
+        lines = latest_log.read_text(encoding="utf-8").splitlines()
+        last_lines = lines[-20:] if len(lines) > 20 else lines
+
+        log_content = "\n".join(last_lines)
+        # Escape HTML tags
+        escaped_content = html.escape(log_content)
+
+        # Send in a preformatted block. Truncate if too long (Telegram limit is 4096 chars).
+        text = f"📂 <b>Latest Logs:</b> <code>{latest_log.name}</code>\n<pre>{escaped_content[-4000:]}</pre>"
+        await update.message.reply_text(text, parse_mode="HTML")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error loading logs: {e}")
+
+
+async def handle_health(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /health to verify internet connectivity and local Ollama server status."""
+    if not update.message or not update.effective_chat:
+        return
+    chat_id = update.effective_chat.id
+    if not is_authorized_chat(chat_id):
+        return
+
+    # Check Internet Connectivity
+    internet_status = "🔴 Offline"
+    try:
+        async with httpx.AsyncClient() as client:
+            res = await client.head("https://www.google.com", timeout=3.0)
+            if res.status_code < 400:
+                internet_status = "🟢 Online"
+    except Exception:
+        pass
+
+    # Check Ollama Server Connectivity
+    ollama_status = "🔴 Offline"
+    models_list_str = "None"
+    try:
+        base_url = OLLAMA_URL.replace("/api/chat", "").replace("/chat", "")
+        tags_url = f"{base_url}/api/tags"
+
+        async with httpx.AsyncClient() as client:
+            res = await client.get(tags_url, timeout=5.0)
+            if res.status_code == 200:
+                ollama_status = "🟢 Running"
+                models = res.json().get("models", [])
+                if models:
+                    models_list_str = ", ".join(f"<code>{m['name']}</code>" for m in models)
+                else:
+                    models_list_str = "No models installed"
+    except Exception as e:
+        ollama_status = f"🔴 Offline ({str(e)[:50]})"
+
+    # Compile health card
+    status_card = (
+        f"🩺 <b>JobScout-Lite Health Diagnostics</b>\n\n"
+        f"🌐 Internet: <b>{internet_status}</b>\n"
+        f"🧠 Ollama Host: <b>{ollama_status}</b>\n"
+        f"📦 Installed Models: {models_list_str}\n"
+    )
+    await update.message.reply_text(status_card, parse_mode="HTML")
+
+
 if __name__ == "__main__":
     if not TELEGRAM_TOKEN:
         logger.error("TELEGRAM_BOT_TOKEN not set in .env")
@@ -233,15 +322,17 @@ if __name__ == "__main__":
 
     logger.info("Starting AI Assistant Bot...")
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    
+
     # Register commands
     app.add_handler(CommandHandler("yes", handle_yes))
     app.add_handler(CommandHandler("no", handle_no))
     app.add_handler(CommandHandler("apply", handle_apply))
     app.add_handler(CommandHandler("status", handle_status))
-    
+    app.add_handler(CommandHandler("logs", handle_logs))
+    app.add_handler(CommandHandler("health", handle_health))
+
     # Register message handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
+
     logger.info(f"Bot is online! Model: {OLLAMA_BOT_MODEL}")
     app.run_polling()

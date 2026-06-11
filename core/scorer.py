@@ -75,6 +75,85 @@ def keyword_prefilter(job: dict, profile_keywords: set[str], min_matches: int = 
     return False
 
 
+def compress_description(description: str, profile_keywords: set[str], max_chars: int = 1000) -> str:
+    """
+    Intelligently compresses a job description to keep context high-value.
+    - Strips common boilerplate footers (About the company, Equal Opportunity, benefits lists).
+    - Prioritizes sentences containing key profile keywords.
+    - Preserves layout/headers where possible, keeping within max_chars.
+    """
+    if not description:
+        return ""
+
+    # Standardize whitespace and remove excessive newlines
+    lines = [line.strip() for line in description.split("\n") if line.strip()]
+
+    # Exclude common boilerplate sections
+    boilerplate_indicators = [
+        "equal opportunity employer",
+        "diversity and inclusion",
+        "we are an equal opportunity",
+        "benefits include",
+        "about the company",
+        "about us",
+        "how to apply",
+        "contact info",
+        "employment type",
+        "seniority level",
+    ]
+
+    pruned_lines = []
+    for line in lines:
+        line_lower = line.lower()
+        if any(indicator in line_lower for indicator in boilerplate_indicators):
+            continue
+        pruned_lines.append(line)
+
+    cleaned_text = "\n".join(pruned_lines)
+    if len(cleaned_text) <= max_chars:
+        return cleaned_text
+
+    # If still too long, score sentences based on keyword matches
+    sentences = re.split(r'(?<=[.!?])\s+', cleaned_text)
+
+    # Track sentence relevance
+    scored_sentences = []
+    for sentence in sentences:
+        score = sum(1 for kw in profile_keywords if kw.lower() in sentence.lower())
+        scored_sentences.append((score, sentence))
+
+    selected_sentences = []
+    current_len = 0
+
+    # Always include the first 3 sentences as they contain the role summary
+    for i in range(min(3, len(sentences))):
+        selected_sentences.append((i, sentences[i]))
+        current_len += len(sentences[i]) + 1
+
+    added_indices = set(range(min(3, len(sentences))))
+
+    # Sort remaining by score descending
+    remaining_scored = sorted(
+        [(score, idx, sent) for idx, (score, sent) in enumerate(scored_sentences) if idx not in added_indices],
+        key=lambda x: x[0],
+        reverse=True
+    )
+
+    for score, idx, sent in remaining_scored:
+        if current_len + len(sent) + 1 > max_chars:
+            break
+        if score > 0 or len(selected_sentences) < 8:
+            selected_sentences.append((idx, sent))
+            current_len += len(sent) + 1
+            added_indices.add(idx)
+
+    # Sort by original index to keep flow
+    selected_sentences.sort(key=lambda x: x[0])
+
+    compressed = " ".join([sent for _, sent in selected_sentences])
+    return compressed[:max_chars]
+
+
 # ─── LLM Scorer ──────────────────────────────────
 
 # System prompt — kept short and precise for SLMs
@@ -119,19 +198,32 @@ async def score_job_llm(
     """
     # Truncate profile to essential info (save context window)
     profile_truncated = profile_text[:800]
-    description = job.get("description", "")[:600]
+    profile_keywords = extract_profile_keywords(profile_text)
+    description = compress_description(job.get("description", ""), profile_keywords, max_chars=1000)
 
-    # Format dynamic few-shot feedback exemplars
+    # Format dynamic few-shot feedback exemplars and user constraints
     feedback_str = ""
+    exclusion_rules = []
     if feedback_exemplars:
         for idx, ex in enumerate(feedback_exemplars[:5], 1):  # Limit to 5 entries to conserve VRAM
             map_val = "STRONG_MATCH" if ex.get("feedback") == "like" else "NO_MATCH"
-            reason = "User liked this job type" if map_val == "STRONG_MATCH" else "User disliked/flagged this job type"
+            ex_reason = ex.get("feedback_reason", "")
+            if ex_reason:
+                reason = f"User explicitly flagged: '{ex_reason}'"
+                if map_val == "NO_MATCH":
+                    exclusion_rules.append(f"Strictly classify roles matching '{ex_reason}' as NO_MATCH.")
+            else:
+                reason = "User liked this job type" if map_val == "STRONG_MATCH" else "User disliked/flagged this job type"
+
             feedback_str += (
                 f"\nExample (User Feedback {idx}):\n"
                 f"Job: \"{ex['title']} at {ex.get('company', 'Unknown')} — {ex.get('description', '')[:200]}\"\n"
                 f"Output: {{\"match\": \"{map_val}\", \"reason\": \"{reason}\"}}\n"
             )
+
+    system_prompt = SCORING_SYSTEM_PROMPT
+    if exclusion_rules:
+        system_prompt += "\n\nAdditional User Constraints:\n" + "\n".join(f"- {rule}" for rule in exclusion_rules[:5])
 
     user_prompt = f"""{FEW_SHOT_EXAMPLES}
 {feedback_str}
@@ -148,7 +240,7 @@ Output: /no_think"""
             response = await client.post(OLLAMA_URL, json={
                 "model": OLLAMA_MODEL,
                 "messages": [
-                    {"role": "system", "content": SCORING_SYSTEM_PROMPT},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
                 "stream": False,

@@ -56,7 +56,7 @@ async def main():
 
     # ── STEP 1: Scrape all portals ──────────────────────
     logger.info("STEP 1: Collecting jobs from all portals...")
-    all_jobs = search_all(SEARCH_QUERIES)
+    all_jobs = await search_all(SEARCH_QUERIES)
     logger.info(f"Total collected: {len(all_jobs)} raw jobs")
 
     # ── STEP 2: Deduplicate (persistent) ────────────────

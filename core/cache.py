@@ -153,11 +153,13 @@ class JobCache:
                 return key
         return None
 
-    def set_feedback(self, short_id: str, feedback: str) -> bool:
+    def set_feedback(self, short_id: str, feedback: str, reason: Optional[str] = None) -> bool:
         """Set feedback ('like' or 'dislike') for a job using its 6-character short ID."""
         key = self.find_key_by_short_id(short_id)
         if key:
             self._cache[key]["feedback"] = feedback
+            if reason:
+                self._cache[key]["feedback_reason"] = reason
             self._save()
             return True
         return False
@@ -180,7 +182,8 @@ class JobCache:
                     "title": data.get("title", ""),
                     "company": data.get("company", ""),
                     "description": data.get("description", ""),
-                    "feedback": data.get("feedback", "")
+                    "feedback": data.get("feedback", ""),
+                    "feedback_reason": data.get("feedback_reason", "")
                 })
         return exemplars
 

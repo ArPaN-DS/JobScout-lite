@@ -34,6 +34,9 @@ async def send_telegram(message: str):
 
 def format_job_message(job: dict, rank: int) -> str:
     """Format a single job result for Telegram."""
+    from core.cache import JobCache
+    short_id = JobCache._make_key(job)[:6]
+
     match_tier = job.get("match_tier", "SKIP")
     emoji = get_match_emoji(match_tier)
     label = get_match_label(match_tier)
@@ -45,7 +48,7 @@ def format_job_message(job: dict, rank: int) -> str:
         pitch_section = f"\n\n📝 <b>Personalized Application Pitch:</b>\n<code>{pitch}</code>"
 
     return (
-        f"{emoji} <b>#{rank} — {label}</b>\n"
+        f"{emoji} <b>#{rank} — {label}</b> (ID: <code>{short_id}</code>)\n"
         f"💼 <b>{job['title']}</b>\n"
         f"🏢 {job.get('company', 'Unknown')}\n"
         f"📍 {job.get('location', 'Unknown')}\n"

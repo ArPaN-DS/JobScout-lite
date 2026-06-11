@@ -77,3 +77,54 @@ class TestJobCache:
         # Should not crash — starts fresh
         cache = JobCache(cache_dir=temp_cache_dir)
         assert cache.size == 0
+
+    def test_short_id_resolution(self, temp_cache_dir):
+        cache = JobCache(cache_dir=temp_cache_dir)
+        job = {"title": "Fullstack Developer", "company": "TechCorp"}
+        cache.mark_seen(job)
+        full_key = cache._make_key(job)
+        short_id = full_key[:6]
+
+        resolved = cache.find_key_by_short_id(short_id)
+        assert resolved == full_key
+
+        non_existent = cache.find_key_by_short_id("z1y2x3")
+        assert non_existent is None
+
+    def test_feedback_loop(self, temp_cache_dir):
+        cache = JobCache(cache_dir=temp_cache_dir)
+        job = {"title": "Backend Lead", "company": "SystemCorp", "description": "Django, Postgres"}
+        cache.mark_seen(job)
+        short_id = cache._make_key(job)[:6]
+
+        # Set feedback
+        success = cache.set_feedback(short_id, "like")
+        assert success is True
+        
+        exemplars = cache.get_feedback_exemplars()
+        assert len(exemplars) == 1
+        assert exemplars[0]["title"] == "Backend Lead"
+        assert exemplars[0]["feedback"] == "like"
+
+    def test_state_updates(self, temp_cache_dir):
+        cache = JobCache(cache_dir=temp_cache_dir)
+        job = {"title": "Frontend dev", "company": "Startup"}
+        cache.mark_seen(job)
+        short_id = cache._make_key(job)[:6]
+
+        assert cache.set_state(short_id, "applied") is True
+        applied = cache.get_applied_jobs()
+        assert len(applied) == 1
+        assert applied[0]["title"] == "Frontend dev"
+
+    def test_persistent_chat_history(self, monkeypatch, tmp_path):
+        from core.cache import load_chat_history, save_chat_history
+        # Mock CACHE_DIR
+        monkeypatch.setattr("core.cache.CACHE_DIR", tmp_path)
+
+        dummy_history = {12345: [{"role": "user", "content": "hello"}]}
+        save_chat_history(dummy_history)
+
+        loaded = load_chat_history()
+        assert 12345 in loaded
+        assert loaded[12345][0]["content"] == "hello"

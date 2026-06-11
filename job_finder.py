@@ -87,7 +87,8 @@ async def main():
     )
 
     # ── STEP 4: LLM scoring ────────────────────────────
-    logger.info(f"STEP 4: Scoring {len(candidates)} jobs with {OLLAMA_MODEL}...")
+    feedback_exemplars = cache.get_feedback_exemplars()
+    logger.info(f"STEP 4: Scoring {len(candidates)} jobs with {OLLAMA_MODEL}... (Feedback exemplars loaded: {len(feedback_exemplars)})")
     strong_matches = []
     good_matches = []
     errors = 0
@@ -96,7 +97,7 @@ async def main():
         for i, job in enumerate(candidates):
             logger.info(f"  [{i+1}/{len(candidates)}] {job['title']} @ {job.get('company', '?')[:30]}")
 
-            result = await score_job_llm(job, profile_text, client)
+            result = await score_job_llm(job, profile_text, client, feedback_exemplars=feedback_exemplars)
             job["match_tier"] = result["match"]
             job["match_reason"] = result.get("reason", "")
 

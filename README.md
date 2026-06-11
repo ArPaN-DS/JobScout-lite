@@ -162,7 +162,18 @@ python bot.py
 # Double-click STOP_AI.bat to free GPU/RAM
 ```
 
-### Step 5: Running Tests
+### Step 5: Agent Memory & Feedback Commands
+
+JobScout-Lite features a persistent feedback memory database and job state CRM. Every matched job card is delivered with a unique 6-character short identifier (e.g. `ID: abcd12`). You can send the following commands to the Telegram bot to manage your pipeline:
+
+* `/yes <job_id>` — Register positive feedback. Future LLM classification runs dynamically load these as positive few-shot exemplars, self-correcting and prioritizing similar roles.
+* `/no <job_id>` — Register negative feedback. Future LLM classification runs dynamically load these to avoid showing similar irrelevant roles.
+* `/apply <job_id>` — Log that you have applied to this job. This moves the job state in the persistent cache to `applied`.
+* `/status` — View your current agent status, active model configurations, total cache size, feedback counts, and a summary of your applied job pipeline.
+
+Additionally, conversation histories are persistently saved to `jobs_cache/chat_history.json`, preserving chatbot memory across system restarts.
+
+### Step 6: Running Tests
 
 To run the unit and integration tests and verify that the system is fully functional:
 

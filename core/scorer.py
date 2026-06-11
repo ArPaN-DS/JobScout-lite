@@ -110,7 +110,8 @@ async def score_job_llm(
     job: dict,
     profile_text: str,
     client: httpx.AsyncClient,
-    max_retries: int = 2
+    max_retries: int = 2,
+    feedback_exemplars: Optional[list[dict]] = None
 ) -> dict:
     """
     Score a single job against the candidate profile using Ollama.
@@ -120,8 +121,20 @@ async def score_job_llm(
     profile_truncated = profile_text[:800]
     description = job.get("description", "")[:600]
 
-    user_prompt = f"""{FEW_SHOT_EXAMPLES}
+    # Format dynamic few-shot feedback exemplars
+    feedback_str = ""
+    if feedback_exemplars:
+        for idx, ex in enumerate(feedback_exemplars[:5], 1):  # Limit to 5 entries to conserve VRAM
+            map_val = "STRONG_MATCH" if ex.get("feedback") == "like" else "NO_MATCH"
+            reason = "User liked this job type" if map_val == "STRONG_MATCH" else "User disliked/flagged this job type"
+            feedback_str += (
+                f"\nExample (User Feedback {idx}):\n"
+                f"Job: \"{ex['title']} at {ex.get('company', 'Unknown')} — {ex.get('description', '')[:200]}\"\n"
+                f"Output: {{\"match\": \"{map_val}\", \"reason\": \"{reason}\"}}\n"
+            )
 
+    user_prompt = f"""{FEW_SHOT_EXAMPLES}
+{feedback_str}
 Now classify this:
 Profile: {profile_truncated}
 Job title: {job['title']}

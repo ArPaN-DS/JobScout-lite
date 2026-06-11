@@ -5,23 +5,42 @@
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" />
 </p>
 
-# 🔍 JobScout-Lite: Local AI Job Finder & Assistant
+# 🔍 JobScout-Lite
 
-> **A fully autonomous, GPU-accelerated AI system that scrapes job portals, scores matches against your resume using a local LLM, and sends ranked results to your phone — all running on your own machine. Zero cloud costs. 100% privacy.**
+### **Your Autonomous Local AI Recruiter & Personal Agent**
+
+> **JobScout-Lite is a fully autonomous, GPU-accelerated AI recruiting agent that works for *you*. It scrapes major job portals, filters matches against your profile, scores compatibility using locally-run LLMs via Ollama, and delivers structured, prioritized reports straight to your Telegram. 100% Private. 100% Free. 100% Local.**
+
+<p align="center">
+  <a href="#-features-at-a-glance"><img src="https://img.shields.io/badge/Features-Local_AI-blueviolet?style=flat-square" /></a>
+  <a href="#-quick-start"><img src="https://img.shields.io/badge/Get_Started-5_Minutes-success?style=flat-square" /></a>
+  <a href="https://github.com/ArPaN-DS/JobScout-lite/stargazers"><img src="https://img.shields.io/github/stars/ArPaN-DS/JobScout-lite?style=flat-square&color=gold" /></a>
+</p>
 
 ---
 
-## ✨ What It Does
+## 💡 Why JobScout-Lite?
 
-| Feature | Description |
-|:---|:---|
-| **🔍 Multi-Portal Job Scraping** | Searches LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Wellfound & Foundit concurrently |
-| **🧠 AI-Powered Match Scoring** | Two-stage matching: instant keyword pre-filtering + 3-tier LLM classification (via Ollama) |
-| **📱 Telegram Delivery** | Sends only high-quality matches (`STRONG_MATCH` & `GOOD_MATCH`) directly to your phone |
-| **💬 Personal Chatbot** | Optional Telegram bot with customizable personality (`SOUL.md`) and conversation memory |
-| **💾 Smart Deduplication** | Never see the same job twice — deduplicates by title + company hash |
-| **⏱️ Fully Automated** | Runs on system boot via Windows Task Scheduler or cron — zero manual intervention |
-| **🔒 100% Private** | All processing happens locally. Your resume and credentials never leave your machine |
+In a crowded job market, finding the right role shouldn't mean spending hours manually parsing listing boards or sending your personal resume to third-party scrapers. 
+
+* 💸 **Zero API Cost**: Powered entirely by state-of-the-art local SLMs/LLMs (like `Qwen2.5` / `Qwen3` / `Llama3`). No OpenAI API tokens or subscriptions required.
+* 🔒 **Ultimate Privacy**: Your resume, skills, target compensation, and locations never leave your machine.
+* ⚡ **Smart Filtering**: The two-stage pre-filtering engine ensures you don't waste precious GPU cycles or time scanning irrelevant matches.
+* 💬 **Double-Agent Utility**: Includes both an automated **Pipeline Orchestrator** (to run on system boot) and an interactive **Conversational Chatbot** (with custom personality via `SOUL.md`).
+
+---
+
+## 🛠️ Features at a Glance
+
+| Engine / Component | Capability | Tech Under the Hood |
+| :--- | :--- | :--- |
+| **🌐 Aggregator Scraper** | Parallel scraping across LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Wellfound, and Foundit. | `python-jobspy` + `BeautifulSoup` + `asyncio` |
+| **⚡ Stage-1 Pre-Filter** | Filters out obvious mismatch roles instantly based on profile keywords before invoking LLM logic. | Python RegEx (Instant, 0 GPU cost) |
+| **🧠 Stage-2 LLM Classifier** | Classifies compatibility into `STRONG_MATCH`, `GOOD_MATCH`, or `NO_MATCH` with structured JSON reasons. | `Ollama` + SLM (`qwen3:4b` / `llama3`) |
+| **📱 Telegram Delivery** | Instantly dispatches ranked job detail cards, direct apply links, and AI matching explanations. | `python-telegram-bot` + Markdown formatting |
+| **💬 Interactive Chatbot** | A conversational companion bot with conversation memory and custom personality injection (`SOUL.md`). | `python-telegram-bot` + `httpx` stream |
+| **💾 Smart Cache** | Hash-based deduplication ensuring you never see the same job post twice across separate runs. | JSON local database store |
+| **⏱️ Wake & Sleep Scheduler** | Runs silently in the background on startup, processes new postings, and automatically unloads models. | Windows Task Scheduler / Startup batch scripts |
 
 ---
 
